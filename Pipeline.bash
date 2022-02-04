@@ -46,8 +46,15 @@ function seqkit_stats() {
     if [ ! -d "Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
       cat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/^FAQ|fastq_runid_\S*.fastq > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/Pconc$1$2.fastq
-    }
+    } else {
+      cat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/^FAQ|fastq_runid_\Pconc$1$2.fastq > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/Pconc$1$2.fastq
     fi
+    old_element=$element
+}
+
+function seqkit_stats2() {
+  echo "------------------ seqkit stats ------------------"
+  seqkit stats /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/PconcAll.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/results_seqkit_all.txt | csvtk csv2md -t
 }
 
 function run() {
@@ -68,7 +75,7 @@ read_entier='y' #par défaut on lance tout
 number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
 bool_seqkit='n'
-repertoire_seqkit='/students/BILL/resultat_pipeline/seqkit/'
+repertoire_seqkit='/students/BILL/commun/resultat_pipeline/seqkit/'
 
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
 read -p "Réaliser une analyse avec seqkit pour déterminer la taille de fragment minimun ? (y/n)" bool_seqkit
@@ -76,14 +83,13 @@ read -p "Réaliser une analyse avec seqkit pour déterminer la taille de fragmen
 if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ]; then 
 {
    seqkit_stats $element $number_lenght
-   
-   if [ ! -d $repertoire_seqkit ]; then # si le repertoire n'existe pas on le crée
+   if [ ! -d $repertoire_seqkit ]; then #si le repertoire n'existe pas on le crée
    {
       mkdir /students/BILL/resultat_pipeline/seqkit/
    }
    fi
    
-   srun -c 8 seqkit stats $element.fastq - o /students/BILL/resultat_pipeline/seqkit/result_seqkit.txt | csvtk csv2md -t 
+   srun -c 8 seqkit stats $element.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/result_seqkit.txt | csvtk csv2md -t 
    echo "Les résultats du seqkit de l'ensemble des variants est disponible dans le répertoire : /students/BILL/resultat_pipeline/seqkit/"
    echo "Fin du programme"
    exit
