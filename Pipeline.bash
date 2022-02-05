@@ -84,12 +84,12 @@ if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ]; then
    if [ ! -d $repertoire_seqkit ]; then #si le repertoire n'existe pas on le crée
    {
       mkdir $repertoire_seqkit
-      seqkit_stats2 $element
    }
    fi
-   
-   srun -c 8 seqkit stats $element.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/result_seqkit.txt | csvtk csv2md -t 
-   echo "Les résultats du seqkit de l'ensemble des variants est disponible dans le répertoire : /students/BILL/resultat_pipeline/seqkit/"
+      
+   srun -c 8 seqkit stats $element.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/result_seqkit.txt | csvtk csv2md -t
+   cat $repertoire_seqkit
+   echo "Les résultats du seqkit de l'ensemble des variants est disponible dans le répertoire : $repertoire_seqkit"
    echo "Fin du programme"
    exit
 
