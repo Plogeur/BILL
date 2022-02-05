@@ -39,7 +39,7 @@ function maFonction()
 
 }
 
-function seqkit_stats() { #sans rien docn faire le cat des fastq + le cat des cat 
+function seqkit_stats() { #sans rien donc faire le cat des fastq + le cat des cat 
   echo "------------------ seqkit stats ------------------"
   for element in $list_P
   do
@@ -54,9 +54,9 @@ function seqkit_stats() { #sans rien docn faire le cat des fastq + le cat des ca
 
 function seqkit_stats2() { #avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  srun -c 8 seqkit stats /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/PconcAll.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/results_seqkit_all.txt | csvtk csv2md -t
-  cat $repertoire_seqkit/results_seqkit_all
-  echo "Les résultats du seqkit de l'ensemble des variants est disponible dans le répertoire : $repertoire_seqkit/results_seqkit_all"
+  srun -c 8 seqkit stats /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/PconcAll.fastq -o $1/results_seqkit_all.txt | csvtk csv2md -t
+  cat $1/results_seqkit_all
+  echo "Les résultats du seqkit de l'ensemble des variants est disponible dans le répertoire : $1/results_seqkit_all"
   echo "Fin du programme"
   exit
 }
@@ -90,9 +90,8 @@ if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ]; then
       mkdir $repertoire_seqkit
    }
    fi
-   seqkit_stats2
+   seqkit_stats2 $repertoire_seqkit
    
-
 } else {
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
 read -p "Quel taille de reads minimun pour le seqkit ? <int> > 0 " number_lenght
