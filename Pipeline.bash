@@ -39,7 +39,7 @@ function maFonction()
 
 }
 
-function seqkit_stats() {
+function seqkit_stats() { #sans rien docn faire le cat des fastq + le cat des cat 
   echo "------------------ seqkit stats ------------------"
   for element in $list_P
   do
@@ -52,9 +52,13 @@ function seqkit_stats() {
     old_element=$element
 }
 
-function seqkit_stats2() {
+function seqkit_stats2() { #avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  seqkit stats /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/PconcAll.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/results_seqkit_all.txt | csvtk csv2md -t
+  srun -c 8 seqkit stats /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/PconcAll.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/results_seqkit_all.txt | csvtk csv2md -t
+  cat $repertoire_seqkit/results_seqkit_all
+  echo "Les résultats du seqkit de l'ensemble des variants est disponible dans le répertoire : $repertoire_seqkit/results_seqkit_all"
+  echo "Fin du programme"
+  exit
 }
 
 function run() {
@@ -86,12 +90,8 @@ if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ]; then
       mkdir $repertoire_seqkit
    }
    fi
-      
-   srun -c 8 seqkit stats $element.fastq -o /students/BILL/commun/resultat_pipeline/seqkit/result_seqkit.txt | csvtk csv2md -t
-   cat $repertoire_seqkit
-   echo "Les résultats du seqkit de l'ensemble des variants est disponible dans le répertoire : $repertoire_seqkit"
-   echo "Fin du programme"
-   exit
+   seqkit_stats2
+   
 
 } else {
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
