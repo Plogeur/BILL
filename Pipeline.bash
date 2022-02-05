@@ -75,17 +75,16 @@ read_entier='y' #par défaut on lance tout
 number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
 bool_seqkit='n'
-repertoire_seqkit='/students/BILL/commun/resultat_pipeline/seqkit/'
+repertoire_seqkit='/students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/seqkit/'
 
-read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
 read -p "Réaliser une analyse avec seqkit pour déterminer la taille de fragment minimun ? (y/n)" bool_seqkit
 
 if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ]; then 
 {
-   seqkit_stats $element $number_lenght
    if [ ! -d $repertoire_seqkit ]; then #si le repertoire n'existe pas on le crée
    {
-      mkdir /students/BILL/resultat_pipeline/seqkit/
+      mkdir $repertoire_seqkit
+      seqkit_stats2 $element
    }
    fi
    
@@ -95,7 +94,8 @@ if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ]; then
    exit
 
 } else {
-read -p "Quel taille de fragments pour le seqkit ? <int> > 0 " number_lenght
+read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
+read -p "Quel taille de reads minimun pour le seqkit ? <int> > 0 " number_lenght
 }
 fi
 
