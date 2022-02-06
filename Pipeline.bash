@@ -45,7 +45,7 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
   for element in $list_P
   do
     selecte $element $1
-    if [ ! -d "$repertoire_Ines/$1/$element/Pconc$1$element.fastq" ]; then #concatene les fastq s'il n'existe pas
+    if [ ! -e "$repertoire_Ines/$1/$element/Pconc$1$element.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
       srun -c 10 cat $repertoire_Ines/$element/^FAQ|fastq_runid_\S*.fastq > $repertoire_Ines/Pconc/Pconc$1$element.fastq
     } else {
@@ -59,12 +59,12 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
 
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  if [ ! -d "$repertoire_Ines/Pconc/" ]; then
+  if [ ! -d "$repertoire_Ines/Pconc" ]; then
   {
-      mkdir $repertoire_Ines/Pconc/
+      mkdir $repertoire_Ines/Pconc
   }
   fi
-  if [ ! -d "$repertoire_Ines/Pconc/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
+  if [ ! -e "$repertoire_Ines/Pconc/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
       Pconc $1
     }
