@@ -41,8 +41,7 @@ function maFonction()
 
 }
 
-function seqkit_stats() { #sans rien donc faire le cat des fastq + le cat des cat 
-  echo "------------------ seqkit stats ------------------"
+function Pconc() { #fait le cat des fastq + le cat des cat 
   for element in $list_P
   do
     if [ ! -d "Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
