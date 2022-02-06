@@ -11,7 +11,7 @@
 
 2/Téléchargement est association des fichiers issus du séquençage et séquence de référence tel que :
 
-- arbre 
+- arbre (soon)
 
 3/Accès au cluster informatique de l'UM
 
