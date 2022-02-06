@@ -3,7 +3,7 @@
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
 repertoire_Ines='/students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE'
 
-function maFonction()
+function pipeline()
 
 {
   SECONDS=0
@@ -41,25 +41,32 @@ function maFonction()
 
 }
 
-function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des cat 
+function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des cat
   for element in $list_P
   do
-    if [ ! -d "$repertoire_Ines/Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
+    selecte $element $1
+    if [ ! -d "$repertoire_Ines/$1/$element/Pconc$1$element.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
-      srun -c 10 cat $repertoire_Ines/$X/^FAQ|fastq_runid_\S*.fastq > $repertoire_Ines/Pconc$1$2.fastq
+      srun -c 10 cat $repertoire_Ines/$element/^FAQ|fastq_runid_\S*.fastq > $repertoire_Ines/Pconc/Pconc$1$element.fastq
     } else {
-      srun -c 10 cat $repertoire_Ines/$X/^FAQ|fastq_runid_\Pconc$1$2.fastq > $repertoire_Ines/Pconc$1$2.fastq
+      mv $repertoire_Ines/$1/$element/Pconc$1$element.fastq > $repertoire_Ines/Pconc/Pconc$1$element.fastq
     }
     fi
-    old_element=$element
- done
+  done
+  srun -c 10 cat $repertoire_Ines/Pconc/*.fastq > $repertoire_Ines/Pconc/PconcAll.fastq
+  rm $repertoire_Ines/Pconc/^Pconc\S*.fastq
 }
 
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  if [ ! -d "$repertoire_Ines/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
+  if [ ! -d "$repertoire_Ines/Pconc/" ]; then
+  {
+      mkdir $repertoire_Ines/Pconc/
+  }
+  fi
+  if [ ! -d "$repertoire_Ines/Pconc/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
-      Pconc
+      Pconc $1
     }
   fi
 
@@ -70,15 +77,15 @@ function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   exit
 }
 
-function run() {
+function selecte() {
   if [[ "$1" == 'P1.2' ]]; then
-    maFonction $1 P1 $2 $3
+    $2 = 'P1'
   fi
   if [[ "$1" =~ P15.. ]]; then
-    maFonction $1 P15 $2 $3
+    $2 = 'P15' 
   fi
   if [[ "$1" =~ P33.. ]]; then
-    maFonction $1 P33 $2 $3
+    $2 = 'P33'
   fi
 }
 
@@ -88,6 +95,7 @@ read_entier='y' #par défaut on lance tout
 number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
 bool_seqkit='n'
+type_P=''
 
 echo "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping."
 read -p "Réaliser une analyse avec seqkit pour déterminer la taille de fragment minimun ? (y/n) " bool_seqkit
@@ -99,7 +107,7 @@ if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ] || [ "$bool_seqkit" 
       mkdir $repertoire_Ines/seqkit/
    }
    fi
-   seqkit_stats2
+   seqkit_stats2 $type_P
    
 } else {
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
@@ -114,14 +122,16 @@ do
       read -p "Voulez-vous lancer le $element ? (y/n) " read_P
       if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
       {
-        run $element $number $number_lenght
+        selecte $element $type_P
+        pipeline $element $type_P $number $number_lenght
       }
       fi
   }
   else [ "$read_entier" == "y" ] || [ "$read_entier" == "yes" ] || [ "$read_entier" == "oui" ] # lancement entier
   {
-      run $element $number $number_lenght
-   }
+    selecte $element $type_P
+    pipeline $element $type_P $number $number_lenght
+  }
   fi
   
   number=$(($number+1)) #nombres de tour de boucle
