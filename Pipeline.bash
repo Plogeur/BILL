@@ -31,7 +31,7 @@ function maFonction()
   srun -c 10 samtools flagstat $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam > $repertoire_Ines/$2/$1/mapping$4$1.sorted.flagst
   cat $repertoire_Ines/$2/$1/mapping$4$1.sorted.flagst
   echo "------------------ sniffles : $1 ------------------ "
-  srun -c 10 sniffles -l 0 -m $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
+  srun -c 12 sniffles -l 0 -m $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
@@ -41,21 +41,21 @@ function maFonction()
 
 }
 
-function Pconc() { #fait le cat des fastq + le cat des cat 
+function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des cat 
   for element in $list_P
   do
     if [ ! -d "$repertoire_Ines/Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
-      srun -c 10 cat $repertoire_Ines/$X/^FAQ | fastq_runid_\S*.fastq > $repertoire_Ines/Pconc$1$2.fastq
+      srun -c 10 cat $repertoire_Ines/$X/^FAQ|fastq_runid_\S*.fastq > $repertoire_Ines/Pconc$1$2.fastq
     } else {
-      srun -c 10 cat $repertoire_Ines/$X/^FAQ | fastq_runid_\Pconc$1$2.fastq > $repertoire_Ines/Pconc$1$2.fastq
+      srun -c 10 cat $repertoire_Ines/$X/^FAQ|fastq_runid_\Pconc$1$2.fastq > $repertoire_Ines/Pconc$1$2.fastq
     }
     fi
     old_element=$element
  done
 }
 
-function seqkit_stats2() { #avec PconcALL
+function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
   if [ ! -d "$repertoire_Ines/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
@@ -89,8 +89,8 @@ number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
 bool_seqkit='n'
 
-echo "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping"
-read -p "Réaliser une analyse avec seqkit pour déterminer la taille de fragment minimun ? (y/n)" bool_seqkit
+echo "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping."
+read -p "Réaliser une analyse avec seqkit pour déterminer la taille de fragment minimun ? (y/n) " bool_seqkit
 
 if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ] || [ "$bool_seqkit" == "oui" ]; then 
 {
@@ -103,7 +103,7 @@ if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ] || [ "$bool_seqkit" 
    
 } else {
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
-read -p "Quel taille de reads minimun pour le seqkit ? <int> > 0 " number_lenght
+read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
 }
 fi
 
