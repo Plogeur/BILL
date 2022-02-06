@@ -46,9 +46,9 @@ function Pconc() { #fait le cat des fastq + le cat des cat
   do
     if [ ! -d "Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
-      cat $repertoire_Ines/$X/^FAQ  | fastq_runid_\S*.fastq >  $repertoire_Ines/Pconc$1$2.fastq
+      cat $repertoire_Ines/$X/^FAQ | fastq_runid_\S*.fastq > $repertoire_Ines/Pconc$1$2.fastq
     } else {
-      cat  $repertoire_Ines/$X/^FAQ | fastq_runid_\Pconc$1$2.fastq >  $repertoire_Ines/Pconc$1$2.fastq
+      cat $repertoire_Ines/$X/^FAQ | fastq_runid_\Pconc$1$2.fastq > $repertoire_Ines/Pconc$1$2.fastq
     fi
     old_element=$element
 }
