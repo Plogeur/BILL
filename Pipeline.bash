@@ -12,26 +12,26 @@ function maFonction()
   echo "------------------ variant n°$3 : $1 ------------------"
   echo "------------------------------------------------ "
   echo "------------------ seqkit seq : $1 ------------------"
-  srun -c 8 seqkit seq $repertoire_Ines/$2/$1/$1.fastq -m $4 -o $repertoire_Ines/$2/$1/Pconc$4$1.fastq
+  srun -c 10 seqkit seq $repertoire_Ines/$2/$1/$1.fastq -m $4 -o $repertoire_Ines/$2/$1/Pconc$4$1.fastq
   echo "------------------ mapping : $1 ------------------"
-  srun -c 8 minimap2 --MD -ax map-ont -t 6 $repertoire_Ines/seq_ref/reference.fasta $repertoire_Ines/$2/$1/Pconc$4$1.fastq -o $repertoire_Ines/$2/$1/mapping$4$1.sam
+  srun -c 10 minimap2 --MD -ax map-ont -t 6 $repertoire_Ines/seq_ref/reference.fasta $repertoire_Ines/$2/$1/Pconc$4$1.fastq -o $repertoire_Ines/$2/$1/mapping$4$1.sam
   echo "------------------ samtools view1 : $1 ------------------"
-  srun -c 8 samtools view -ubS -@ 4 $repertoire_Ines/$2/$1/mapping$4$1.sam -o $repertoire_Ines/$2/$1/mapping$4$1.bam
+  srun -c 10 samtools view -ubS -@ 4 $repertoire_Ines/$2/$1/mapping$4$1.sam -o $repertoire_Ines/$2/$1/mapping$4$1.bam
   echo "Conversion réussie du fichier mapping$4$1 du .sam en .bam"
   echo "------------------ samtools : $1 ------------------"
-  srun -c 8 samtools sort -l 0 -@ 4 -o $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam $repertoire_Ines/$2/$1/mapping$4$1.bam
+  srun -c 10 samtools sort -l 0 -@ 4 -o $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam $repertoire_Ines/$2/$1/mapping$4$1.bam
   echo "Trie réussie du fichier mapping$4$1.bam"
   echo "------------------ samtools view2 : $1 ------------------"
-  srun -c 8 samtools view -h -F 4 -b $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam > $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam
+  srun -c 10 samtools view -h -F 4 -b $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam > $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam
   echo "Mappage réussie du fichier trier mapping$4$1.bam"
   echo "------------------ samtools index : $1 ------------------"
-  srun -c 8 samtools index $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bai
+  srun -c 10 samtools index $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bai
   echo "Indexation réussite pour le fichier mapping$4$1"
   echo "------------------ samtools flagstat : $1 ------------------ "
-  srun -c 8 samtools flagstat $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam > $repertoire_Ines/$2/$1/mapping$4$1.sorted.flagst
+  srun -c 10 samtools flagstat $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam > $repertoire_Ines/$2/$1/mapping$4$1.sorted.flagst
   cat $repertoire_Ines/$2/$1/mapping$4$1.sorted.flagst
   echo "------------------ sniffles : $1 ------------------ "
-  srun -c 8 sniffles -l 0 -m $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
+  srun -c 10 sniffles -l 0 -m $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
@@ -44,20 +44,26 @@ function maFonction()
 function Pconc() { #fait le cat des fastq + le cat des cat 
   for element in $list_P
   do
-    if [ ! -d "Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
+    if [ ! -d "$repertoire_Ines/Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
-      cat $repertoire_Ines/$X/^FAQ | fastq_runid_\S*.fastq > $repertoire_Ines/Pconc$1$2.fastq
+      srun -c 10 cat $repertoire_Ines/$X/^FAQ | fastq_runid_\S*.fastq > $repertoire_Ines/Pconc$1$2.fastq
     } else {
-      cat $repertoire_Ines/$X/^FAQ | fastq_runid_\Pconc$1$2.fastq > $repertoire_Ines/Pconc$1$2.fastq
+      srun -c 10 cat $repertoire_Ines/$X/^FAQ | fastq_runid_\Pconc$1$2.fastq > $repertoire_Ines/Pconc$1$2.fastq
     }
     fi
     old_element=$element
-  done
+ done
 }
 
 function seqkit_stats2() { #avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  srun -c 8 seqkit stats $repertoire_Ines/PconcAll.fastq -o $repertoire_Ines/seqkit/results_seqkit_all.txt | csvtk csv2md -t
+  if [ ! -d "$repertoire_Ines/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
+    {
+      Pconc
+    }
+  fi
+
+  srun -c 10 seqkit stats $repertoire_Ines/PconcAll.fastq -o $repertoire_Ines/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $repertoire_Ines/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_Ines/seqkit/results_seqkit_all"
   echo "Fin du programme"
@@ -108,7 +114,7 @@ do
       read -p "Voulez-vous lancer le $element ? (y/n) " read_P
       if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
       {
-          run $element $number $number_lenght
+        run $element $number $number_lenght
       }
       fi
   }
