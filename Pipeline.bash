@@ -49,6 +49,7 @@ function Pconc() { #fait le cat des fastq + le cat des cat
       cat $repertoire_Ines/$X/^FAQ | fastq_runid_\S*.fastq > $repertoire_Ines/Pconc$1$2.fastq
     } else {
       cat $repertoire_Ines/$X/^FAQ | fastq_runid_\Pconc$1$2.fastq > $repertoire_Ines/Pconc$1$2.fastq
+    }
     fi
     old_element=$element
 }
