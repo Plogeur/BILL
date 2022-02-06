@@ -52,6 +52,7 @@ function Pconc() { #fait le cat des fastq + le cat des cat
     }
     fi
     old_element=$element
+  done
 }
 
 function seqkit_stats2() { #avec PconcALL
