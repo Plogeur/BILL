@@ -83,6 +83,7 @@ number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
 bool_seqkit='n'
 
+echo "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping"
 read -p "Réaliser une analyse avec seqkit pour déterminer la taille de fragment minimun ? (y/n)" bool_seqkit
 
 if [ "$bool_seqkit" == "y" ] || [ "$bool_seqkit" == "yes" ] || [ "$bool_seqkit" == "oui" ]; then 
