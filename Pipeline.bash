@@ -14,25 +14,25 @@ function maFonction()
   echo "------------------ seqkit seq : $1 ------------------"
   srun -c 8 seqkit seq $repertoire_Ines/$2/$1/$1.fastq -m $4 -o $repertoire_Ines/$2/$1/Pconc$4$1.fastq
   echo "------------------ mapping : $1 ------------------"
-  srun -c 8 minimap2 --MD -ax map-ont -t 6 $repertoire_Ines/seq_ref/reference.fasta /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/Pconc$4$1.fastq -o /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sam
+  srun -c 8 minimap2 --MD -ax map-ont -t 6 $repertoire_Ines/seq_ref/reference.fasta $repertoire_Ines/$2/$1/Pconc$4$1.fastq -o $repertoire_Ines/$2/$1/mapping$4$1.sam
   echo "------------------ samtools view1 : $1 ------------------"
-  srun -c 8 samtools view -ubS -@ 4 $repertoire_Ines/$2/$1/mapping$4$1.sam -o /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.bam
+  srun -c 8 samtools view -ubS -@ 4 $repertoire_Ines/$2/$1/mapping$4$1.sam -o $repertoire_Ines/$2/$1/mapping$4$1.bam
   echo "Conversion réussie du fichier mapping$4$1 du .sam en .bam"
   echo "------------------ samtools : $1 ------------------"
-  srun -c 8 samtools sort -l 0 -@ 4 -o /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.bam /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.bam
+  srun -c 8 samtools sort -l 0 -@ 4 -o $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam $repertoire_Ines/$2/$1/mapping$4$1.bam
   echo "Trie réussie du fichier mapping$4$1.bam"
   echo "------------------ samtools view2 : $1 ------------------"
-  srun -c 8 samtools view -h -F 4 -b /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.bam > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.mapped.bam
+  srun -c 8 samtools view -h -F 4 -b $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam > $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam
   echo "Mappage réussie du fichier trier mapping$4$1.bam"
   echo "------------------ samtools index : $1 ------------------"
-  srun -c 8 samtools index /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.mapped.bam /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.mapped.bai
+  srun -c 8 samtools index $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bai
   echo "Indexation réussite pour le fichier mapping$4$1"
   echo "------------------ samtools flagstat : $1 ------------------ "
-  srun -c 8 samtools flagstat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.bam > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.flagst
-  cat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.flagst
+  srun -c 8 samtools flagstat $repertoire_Ines/$2/$1/mapping$4$1.sorted.bam > $repertoire_Ines/$2/$1/mapping$4$1.sorted.flagst
+  cat $repertoire_Ines/$2/$1/mapping$4$1.sorted.flagst
   echo "------------------ sniffles : $1 ------------------ "
-  srun -c 8 sniffles -l 0 -m /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.mapped.vcf
-  head /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$2/$1/mapping$4$1.sorted.mapped.vcf
+  srun -c 8 sniffles -l 0 -m $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
+  head $repertoire_Ines/$2/$1/mapping$4$1.sorted.mapped.vcf
   #commun/igv.sh
   duration=$SECONDS
   
@@ -46,16 +46,16 @@ function seqkit_stats() { #sans rien donc faire le cat des fastq + le cat des ca
   do
     if [ ! -d "Pconc$1$2.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
-      cat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/^FAQ|fastq_runid_\S*.fastq > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/Pconc$1$2.fastq
+      cat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$X/^FAQ|fastq_runid_\S*.fastq > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/Pconc$1$2.fastq
     } else {
-      cat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/^FAQ|fastq_runid_\Pconc$1$2.fastq > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/Pconc$1$2.fastq
+      cat /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/$X/^FAQ|fastq_runid_\Pconc$1$2.fastq > /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/Pconc$1$2.fastq
     fi
     old_element=$element
 }
 
 function seqkit_stats2() { #avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  srun -c 8 seqkit stats /students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE/PconcAll.fastq -o $1/results_seqkit_all.txt | csvtk csv2md -t
+  srun -c 8 seqkit stats $repertoire_Ines/PconcAll.fastq -o $repertoire_Ines/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $1/results_seqkit_all
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $1/results_seqkit_all"
   echo "Fin du programme"
