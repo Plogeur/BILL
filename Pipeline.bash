@@ -70,7 +70,7 @@ function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
     }
   fi
 
-  srun -c 10 seqkit stats $repertoire_Ines/PconcAll.fastq -o $repertoire_Ines/seqkit/results_seqkit_all.txt | csvtk csv2md -t
+  srun -c 10 seqkit stats $repertoire_Ines/Pconc/PconcAll.fastq -o $repertoire_Ines/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $repertoire_Ines/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_Ines/seqkit/results_seqkit_all"
   echo "Fin du programme"
