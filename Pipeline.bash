@@ -12,7 +12,7 @@ function pipeline()
   echo "------------------ variant n°$3 : $1 ------------------"
   echo "------------------------------------------------ "
   echo "------------------ seqkit seq : $1 ------------------"
-  srun -c 10 seqkit seq $repertoire_Ines/$2/$1/$1.fastq -m $4 -o $repertoire_Ines/$2/$1/Pconc$4$1.fastq
+  srun -c 10 seqkit seq $repertoire_Ines/$2/$1/Pconc/Pconc$1.fastq -m $4 -o $repertoire_Ines/$2/$1/Pconc/Pconc$4$1.fastq
   echo "------------------ mapping : $1 ------------------"
   srun -c 10 minimap2 --MD -ax map-ont -t 6 $repertoire_Ines/seq_ref/reference.fasta $repertoire_Ines/$2/$1/Pconc$4$1.fastq -o $repertoire_Ines/$2/$1/mapping$4$1.sam
   echo "------------------ samtools view1 : $1 ------------------"
@@ -46,34 +46,27 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
   do
     selecte $element
     type_P="P$?"
-    echo "type_P : $type_P"
-    if [ ! -e "$repertoire_Ines/$type_P/$element/Pconc$element.fastq" ]; then #concatene les fastq s'il n'existe pas
+    echo "concatenation de : $element"
+    if [ ! -e "$repertoire_Ines/Pconc/Pconc$element.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
-      echo "repertoire : $repertoire_Ines/$type_P/$element/"
-      srun -c 10 cat $repertoire_Ines/$type_P/$element/^FAQ|fastq_runid_\S*.fastq > $repertoire_Ines/Pconc/Pconc$element.fastq
-    } else {
-      mv $repertoire_Ines/$type_P/$element/Pconc$element.fastq > $repertoire_Ines/Pconc/Pconc$element.fastq
+      srun -c 10 cat $repertoire_Ines/$type_P/$element/*.fastq > $repertoire_Ines/Pconc/Pconc$element.fastq
     }
+
     fi
   done
-  srun -c 10 cat $repertoire_Ines/Pconc/*.fastq > $repertoire_Ines/Pconc/PconcAll.fastq
-  #rm $repertoire_Ines/Pconc/^Pconc\S*.fastq
+  srun -c 10 cat $repertoire_Ines/Pconc/*.fastq > $repertoire_Ines/PconcAll.fastq
 }
 
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  if [ ! -d "$repertoire_Ines/Pconc" ]; then
-  {
-      mkdir $repertoire_Ines/Pconc
-  }
-  fi
-  if [ ! -e "$repertoire_Ines/Pconc/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
+
+  if [ ! -e "$repertoire_Ines/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
       Pconc
     }
   fi
 
-  srun -c 10 seqkit stats $repertoire_Ines/Pconc/PconcAll.fastq -o $repertoire_Ines/seqkit/results_seqkit_all.txt | csvtk csv2md -t
+  srun -c 10 seqkit stats $repertoire_Ines/PconcAll.fastq -o $repertoire_Ines/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $repertoire_Ines/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_Ines/seqkit/results_seqkit_all"
   echo "Fin du programme"
