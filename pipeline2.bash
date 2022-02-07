@@ -1,11 +1,11 @@
 #!/bin/bash
 
+#Varaible global
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
-echo "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping."
-read -p "Quel sera le nom du repertoire où seront réaliser les analyses et où seront stocker les résultats ? " new_rep
-repertoire_name="/students/BILL/$new_rep/TP_2022/"
+read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping." input
+repertoire_name="/students/BILL/ines.boussiere/test/TP_2022"
 
-function pipeline()
+function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et sniffles
 {
   SECONDS=0
   echo ""
@@ -44,54 +44,54 @@ function pipeline()
 
 function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
   #$1 = name of folder
+  echo "------------------ Création des fichiers ------------------"
 
   #create all folder
-  mkdir -p $1/TP_2022/{P1/P1.2/,P15/{P15.1/,P15.5/,P15.6/,P15.8/,P15.10/},P33/{P33.1/,P33.2/,P33.6/},Pconc/,seq_ref/,seqkit/}
-    
+  mkdir -p $1/{P1/P1.2/,P15/{P15.1/,P15.5/,P15.6/,P15.8/,P15.10/},P33/{P33.1/,P33.2/,P33.6/},Pconc/,seq_ref/,seqkit/}
+  
   #copy all fastq seq in right folder
-  cat /students/BILL/commun/rouge/pass/*.fastq $1/TP_2022/P1/P1.2/
-  cat /students/BILL/commun/violet/fastq_pass/barcode02/*.fastq $1/TP_2022/P15/P15.1/
-  cat /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/TP_2022/P15/P15.5/
-  cat /students/BILL/commun/vert/fastq_pass/barcode05/*.fastq $1/TP_2022/P15/P15.6/
-  cat /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/TP_2022/P15/P15.8/
-  cat /students/BILL/commun/vert/fastq_pass/barcode08/*.fastq $1/TP_2022/P15/P15.10/
-  cat /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/TP_2022/P33/P33.1/
-  cat /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/TP_2022/P33/P33.2/
-  cat /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/TP_2022/P33/P33.6/
+  cp /students/BILL/commun/rouge/pass/*.fastq $1/P1/P1.2/
+  cp /students/BILL/commun/violet/fastq_pass/barcode02/*.fastq $1/P15/P15.1/
+  cp /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/P15/P15.5/
+  cp /students/BILL/commun/vert/fastq_pass/barcode05/*.fastq $1/P15/P15.6/
+  cp /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/P15/P15.8/
+  cp /students/BILL/commun/vert/fastq_pass/barcode08/*.fastq $1/P15/P15.10/
+  cp /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/P33/P33.1/
+  cp /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/P33/P33.2/
+  cp /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/P33/P33.6/
    
   #seq ref
-  cat /students/BILL/commun/REF/reference.fasta $1/TP_2022/seq_ref/
+  cp /students/BILL/commun/REF/reference.fasta $1/seq_ref/
 }
 
-function PycoQC() {
-  barcode=''
+function PycoQC() { #Effectue le PycoQC sur un seul échantillon
+
   read -p "Sur quel barcode réaliser l'analyse PycoQC ? (bleu/rouge/vert/violet) " barcode
     
-    #remplacer les if par des cases 
-    if [ "$barcode" == "bleu" ]; then #concatene les fastq s'il n'existe pas
-    {
-      pycoQC -f /students/BILL/commun/bleu/sequencing_summary_FAQ77496_51f08628.txt -o $repertoire_name/seq_bleu_pycoQC.html
-    }
-    fi 
-    if [ "$barcode" == "rouge" ]; then #concatene les fastq s'il n'existe pas
-    {
-      pycoQC -f /students/BILL/commun/rouge/sequencing_summary.txt -o $repertoire_name/seq_rouge_pycoQC.html
-    }
-    fi
-    if [ "$barcode" == "vert" ]; then #concatene les fastq s'il n'existe pas
-    {
-      pycoQC -f /students/BILL/commun/vert/sequencing_summary_FAQ54249_f602c5a1.txt -o $repertoire_name/seq_vert_pycoQC.html
-    }
-    fi
-    if [ "$barcode" == "violet" ]; then #concatene les fastq s'il n'existe pas
-    {
-      pycoQC -f /students/BILL/commun/violet/sequencing_summary_FAQ54172_5ccb60ff.txt -o $repertoire_name/seq_violet_pycoQC.html
-    }
-    fi
-    # gerer l'erreur de saisi 
+  #remplacer les if par des cases 
+  if [ "$barcode" == "bleu" ]; then #concatene les fastq s'il n'existe pas
+  {
+    pycoQC -f /students/BILL/commun/bleu/sequencing_summary_FAQ77496_51f08628.txt -o $repertoire_name/seq_bleu_pycoQC.html
+  }
+  fi 
+  if [ "$barcode" == "rouge" ]; then #concatene les fastq s'il n'existe pas
+  {
+    pycoQC -f /students/BILL/commun/rouge/sequencing_summary.txt -o $repertoire_name/seq_rouge_pycoQC.html
+  }
+  fi
+  if [ "$barcode" == "vert" ]; then #concatene les fastq s'il n'existe pas
+  {
+    pycoQC -f /students/BILL/commun/vert/sequencing_summary_FAQ54249_f602c5a1.txt -o $repertoire_name/seq_vert_pycoQC.html
+  }
+  fi
+  if [ "$barcode" == "violet" ]; then #concatene les fastq s'il n'existe pas
+  {
+    pycoQC -f /students/BILL/commun/violet/sequencing_summary_FAQ54172_5ccb60ff.txt -o $repertoire_name/seq_violet_pycoQC.html
+  }
+  fi
+  # TODO gerer l'erreur de saisie
 
   echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_name"
-
 }
 
 function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des cat
@@ -111,19 +111,16 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
 
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
-
-  if [ ! -e "$repertoire_name/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
-    {
-      Pconc
-    }
-  fi
-
+  #if [ ! -e "$repertoire_name/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
+  
+  Pconc
+  
   srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $repertoire_name/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_name/seqkit/results_seqkit_all"
 }
 
-function selecte() {
+function selecte() { 
   if [[ "$1" == "P1.2" ]]; then
     return 1
   fi
@@ -136,28 +133,12 @@ function selecte() {
 }
 
 function main() {
-number=1
+number=1 #number of variant 
 read_entier='y' #par défaut on lance tout
 number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
-bool_seqkit='n'
 
-#Test de l'existance d'un repertoire du même nom que celui donner
-if [ -d $repertoire_name/ ]; then
-{
-  read -p "Il existe déjà un repertoire de ce nom voulez-vous écraser celui déjà existant ? (y/n) " bool_ecrase
-  if [ $bool_ecrase == "y" ]; then
-  {
-    Create_folder_AND_Dl_file
-  } else {
-    echo "Fin du programme"
-    exit
-  }
-  fi
-} else {
-  Create_folder_AND_Dl_file
-}
-fi
+Create_folder_AND_Dl_file $repertoire_name
 
 seqkit_stats2
 
@@ -168,25 +149,23 @@ for element in $list_P
 do
   if [ "$read_entier" == "n" ] || [ "$read_entier" == "no" ] || [ "$read_entier" == "non" ]; then #lancement un par un activer
   {
-      read -p "Voulez-vous lancer le $element ? (y/n) " read_P
-      if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
-      {
-        selecte $element
-        type_P="P$?"
-        pipeline $element $type_P $number $number_lenght
-      }
-      fi
-  }
+    read -p "Voulez-vous lancer le $element ? (y/n) " read_P
+    if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
+    {
+      selecte $element
+      type_P="P$?"
+      pipeline $element $type_P $number $number_lenght
+    }
+    fi
+  } 
   else [ "$read_entier" == "y" ] || [ "$read_entier" == "yes" ] || [ "$read_entier" == "oui" ] # lancement entier
   {
     selecte $element
     type_P="P$?"
     pipeline $element $type_P $number $number_lenght
   }
-  fi
-  
-  number=$(($number+1)) #nombres de tour de boucle
-  
+  fi  
+  number=$(($number+1)) #nombres de tour de boucle  
 done
 }
 
