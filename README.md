@@ -20,3 +20,7 @@
 ## PRÉSENTATION :
 
 soon
+
+## OBJECTIF ULTIME :
+
+Commencer d'un repertoire students/.../test/ vide et le remplir jusqu'au IGV
