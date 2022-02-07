@@ -2,9 +2,9 @@
 
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
 repertoire_Ines='/students/BILL/ines.boussiere/TP_2022/BRIVET_BOUSSIERE_BENARD_BAGARRE'
+#read -p "Quel sera le nom du repertoire ou sera réaliser les analyses et où sera stocker les résultats ? " new_rep
 
 function pipeline()
-
 {
   SECONDS=0
   echo ""
@@ -41,9 +41,23 @@ function pipeline()
 
 }
 
-function Creation_rep() {
+function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
   #$1 = name of folder
+  #create all folder
   mkdir -p $1/TP_2022/{P1/P1.2/,P15/{P15.1/,P15.5/,P15.6/,P15.8/,P15.10/},P33/{P33.1/,P33.2/,P33.6/},Pconc/,seq_ref/,seqkit/}
+  
+  #copy all fastq seq in right folder
+  cat /students/BILL/commun/rouge/pass/*.fastq $1/TP_2022/P1/P1.2/
+  cat /students/BILL/commun/violet/fastq_pass/barcode02/*.fastq $1/TP_2022/P15/P15.1/
+  cat /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/TP_2022/P15/P15.5/
+  cat /students/BILL/commun/vert/fastq_pass/barcode05/*.fastq $1/TP_2022/P15/P15.6/
+  cat /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/TP_2022/P15/P15.8/
+  cat /students/BILL/commun/vert/fastq_pass/barcode08/*.fastq $1/TP_2022/P15/P15.10/
+  cat /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/TP_2022/P33/P33.1/
+  cat /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/TP_2022/P33/P33.2/
+  cat /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/TP_2022/P33/P33.6/
+  
+  cat /students/BILL/commun/REF/reference.fasta $1/TP_2022/seq_ref/
 
 }
 
@@ -85,7 +99,6 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
     {
       srun -c 10 cat $repertoire_Ines/$type_P/$element/*.fastq > $repertoire_Ines/Pconc/Pconc$element.fastq
     }
-
     fi
   done
   srun -c 10 cat $repertoire_Ines/Pconc/*.fastq > $repertoire_Ines/PconcAll.fastq
