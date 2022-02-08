@@ -1,6 +1,28 @@
 #!/bin/bash
 
-#Varaible global
+#################################################################################################
+#                                                                                               # 
+#Prend en entrée le nom du repertoire où sera excuter l'ensemble du pipeline                    #
+#Crée les repertoires, copie les fichiers fastq et excuter les différentes analyse              #
+#Génère les .fastq .sam .bam .sorted.bam .sorted.mapped.bam .sorted.mapped.bai .sorted.flagst   #
+#.sorted.mapped.vcf .pdf et .bedgraph                                                           #
+#Ainsi que des txt avec des stats (seqkit, flags,...)                                           #
+#                                                                                               #
+#################################################################################################
+
+if [[ "$1" == -h ]]; then #boff
+{
+  echo "----------------------------------------------------------------------------------------------------------------------------"
+  echo
+  echo "Ce script permet d'analyser un fichier fastq et d'en mapper les reads d'une certaine longueur sur une séquence de référence"
+  echo "Le premier paramètre doit être "
+  echo "Le second paramètre doit être "
+  echo "Le troisième et dernier paramètre doit être "
+  echo "----------------------------------------------------------------------------------------------------------------------------"
+}
+fi 
+
+#Variable global
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
 #à modifier
 read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)" input
@@ -35,10 +57,12 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------ sniffles : $1 ------------------ "
   srun -c 12 sniffles -l 0 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
-
+  echo "------------------ plotCoverage : $1 ------------------ "
   # plotCoverage -b => sorted_mapped.pdf
   # echo "Plot de la couverture des read mappés"
   # plotCoverage -b ${mapped} -o ${pdf} --smartLabels --plotFileFormat pdf -p ${CORE}
+  # srun -c 2 plotCoverage -b "$entete"_sorted_mapped.bam -o "$entete"_plotCov.pdf --smartLabels -T "$entete"_plotCov --outRawCounts "$entete"_raw_counts.txt --outCoverageMetrics "$entete"_cov_metrics.txt --plotFileFormat pdf -p 2
+  # srun -c 2 bamCoverage -b "$entete"_sorted_mapped.bam -o "$entete".bedgraph -of "bedgraph" -p 2  --effectiveGenomeSize 295052 --normalizeUsing RPGC
 
   # extraction vsf
   #pos=`cat ${1} | grep -v "^#" | cut -f 2`
@@ -51,6 +75,12 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   #do
 	#echo -e "${pos[${i}]}\t${svtype[${i}]}"
   #done
+
+  # echo
+  #nbSup=$(grep -c "SVTYPE=DEL" "$entete".vcf)
+  #echo "Il y a " $nbSup " délétion"
+  #nbIns=$(grep -c "SVTYPE=INS" "$entete".vcf)
+  #echo "Il y a " $nbIns " insertion"
 
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
@@ -66,15 +96,15 @@ function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
   mkdir -p $1/{P1/P1.2/,P15/{P15.1/,P15.5/,P15.6/,P15.8/,P15.10/},P33/{P33.1/,P33.2/,P33.6/},Pconc/,seq_ref/,seqkit/}
   
   #copy all fastq seq in right folder
-  cp /students/BILL/commun/rouge/pass/*.fastq $1/P1/P1.2/
-  cp /students/BILL/commun/violet/fastq_pass/barcode02/*.fastq $1/P15/P15.1/
-  cp /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/P15/P15.5/
-  cp /students/BILL/commun/vert/fastq_pass/barcode05/*.fastq $1/P15/P15.6/
-  cp /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/P15/P15.8/
-  cp /students/BILL/commun/vert/fastq_pass/barcode08/*.fastq $1/P15/P15.10/
-  cp /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/P33/P33.1/
-  cp /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/P33/P33.2/
-  cp /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/P33/P33.6/
+  srun -c 10 cp /students/BILL/commun/rouge/pass/*.fastq $1/P1/P1.2/
+  srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode02/*.fastq $1/P15/P15.1/
+  srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/P15/P15.5/
+  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode05/*.fastq $1/P15/P15.6/
+  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/P15/P15.8/
+  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode08/*.fastq $1/P15/P15.10/
+  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/P33/P33.1/
+  srun -c 10 cp /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/P33/P33.2/
+  srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/P33/P33.6/
    
   #seq ref
   cp /students/BILL/commun/REF/reference.fasta $1/seq_ref/
