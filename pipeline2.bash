@@ -7,20 +7,20 @@
 #Génère les .fastq .sam .bam .sorted.bam .sorted.mapped.bam .sorted.mapped.bai .sorted.flagst   #
 #.sorted.mapped.vcf .pdf et .bedgraph                                                           #
 #Ainsi que des txt avec des stats (seqkit, flags,...)                                           #
+#Ce script ne permet pas l'analyse par IGV                                                      #
 #                                                                                               #
 #################################################################################################
 
 if [[ "$1" == -h ]]; then #boff
 {
   echo "----------------------------------------------------------------------------------------------------------------------------"
-  echo
   echo "Ce script permet d'analyser un fichier fastq et d'en mapper les reads d'une certaine longueur sur une séquence de référence"
   echo "Le premier paramètre doit être "
   echo "Le second paramètre doit être "
   echo "Le troisième et dernier paramètre doit être "
   echo "----------------------------------------------------------------------------------------------------------------------------"
 }
-fi 
+fi
 
 #Variable global
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
@@ -54,55 +54,38 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------ samtools flagstat : $1 ------------------ "
   srun -c 10 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
   cat $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
+  echo "------------------ plotCoverage : $1 ------------------ "
+  srun -c 10 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
+  srun -c 10 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
   echo "------------------ sniffles : $1 ------------------ "
   srun -c 12 sniffles -l 0 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
-  echo "------------------ plotCoverage : $1 ------------------ "
-  # plotCoverage -b => sorted_mapped.pdf
-  # echo "Plot de la couverture des read mappés"
-  # plotCoverage -b ${mapped} -o ${pdf} --smartLabels --plotFileFormat pdf -p ${CORE}
-  # srun -c 2 plotCoverage -b "$entete"_sorted_mapped.bam -o "$entete"_plotCov.pdf --smartLabels -T "$entete"_plotCov --outRawCounts "$entete"_raw_counts.txt --outCoverageMetrics "$entete"_cov_metrics.txt --plotFileFormat pdf -p 2
-  # srun -c 2 bamCoverage -b "$entete"_sorted_mapped.bam -o "$entete".bedgraph -of "bedgraph" -p 2  --effectiveGenomeSize 295052 --normalizeUsing RPGC
-
-  # extraction vsf
-  #pos=`cat ${1} | grep -v "^#" | cut -f 2`
-  #svtype=`cat ${1} | grep -o "SVTYPE=..."`
-  #ref=
-  #pos=($pos)
-  #svtype=($svtype)
-  #echo -e "POS\tSVTYPE"
-  #for i in `seq 0 1 ${#pos[@]}`
-  #do
-	#echo -e "${pos[${i}]}\t${svtype[${i}]}"
-  #done
-
-  # echo
-  #nbSup=$(grep -c "SVTYPE=DEL" "$entete".vcf)
-  #echo "Il y a " $nbSup " délétion"
-  #nbIns=$(grep -c "SVTYPE=INS" "$entete".vcf)
-  #echo "Il y a " $nbIns " insertion"
-
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
+  
   duration=$SECONDS
   echo "Temps de calcul pour $1 : $(($duration / 60)) minutes et $(($duration % 60)) secondes."
 }
 
 function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
   #$1 = name of folder
-  echo "------------------ Création des fichiers ------------------"
+  echo "Création des fichiers..."
 
   #create all folder
   mkdir -p $1/{P1/P1.2/,P15/{P15.1/,P15.5/,P15.6/,P15.8/,P15.10/},P33/{P33.1/,P33.2/,P33.6/},Pconc/,seq_ref/,seqkit/}
   
+  echo "Récupération des reads fastq"
   #copy all fastq seq in right folder
   srun -c 10 cp /students/BILL/commun/rouge/pass/*.fastq $1/P1/P1.2/
   srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode02/*.fastq $1/P15/P15.1/
   srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/P15/P15.5/
+  echo "Récupération des reads fastq."
   srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode05/*.fastq $1/P15/P15.6/
   srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/P15/P15.8/
+  echo "Récupération des reads fastq.."
   srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode08/*.fastq $1/P15/P15.10/
   srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/P33/P33.1/
+  echo "Récupération des reads fastq..."
   srun -c 10 cp /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/P33/P33.2/
   srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/P33/P33.6/
    
@@ -174,6 +157,26 @@ function selecte() {
   if [[ "$1" =~ P33.. ]]; then
     return 33
   fi
+}
+
+function extract_VSF() {
+  echo "------------------ extraction VSF : $1 ------------------ "
+  #nbSup=$(grep -c "SVTYPE=DEL" "$entete".vcf)
+  #echo "Il y a " $nbSup " délétion"
+  #nbIns=$(grep -c "SVTYPE=INS" "$entete".vcf)
+  #echo "Il y a " $nbIns " insertion"
+
+  #pos=`cat ${1} | grep -v "^#" | cut -f 2`
+  #svtype=`cat ${1} | grep -o "SVTYPE=..."`
+  #ref=
+  #pos=($pos)
+  #svtype=($svtype)
+  #echo -e "POS\tSVTYPE"
+  #for i in `seq 0 1 ${#pos[@]}`
+  #do
+	#echo -e "${pos[${i}]}\t${svtype[${i}]}"
+  #done
+
 }
 
 function main() {
