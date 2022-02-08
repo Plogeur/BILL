@@ -2,7 +2,8 @@
 
 #Varaible global
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
-read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping." input
+#à modifier
+read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)" input
 repertoire_name="/students/BILL/ines.boussiere/test/TP_2022"
 
 function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et sniffles
@@ -34,12 +35,27 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------ sniffles : $1 ------------------ "
   srun -c 12 sniffles -l 0 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+
+  # plotCoverage -b => sorted_mapped.pdf
+  # echo "Plot de la couverture des read mappés"
+  # plotCoverage -b ${mapped} -o ${pdf} --smartLabels --plotFileFormat pdf -p ${CORE}
+
+  # extraction vsf
+  #pos=`cat ${1} | grep -v "^#" | cut -f 2`
+  #svtype=`cat ${1} | grep -o "SVTYPE=..."`
+  #ref=
+  #pos=($pos)
+  #svtype=($svtype)
+  #echo -e "POS\tSVTYPE"
+  #for i in `seq 0 1 ${#pos[@]}`
+  #do
+	#echo -e "${pos[${i}]}\t${svtype[${i}]}"
+  #done
+
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
   duration=$SECONDS
-  
   echo "Temps de calcul pour $1 : $(($duration / 60)) minutes et $(($duration % 60)) secondes."
-
 }
 
 function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
@@ -98,7 +114,7 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
   for element in $list_P
   do
     selecte $element
-    type_P="P$?"
+    type_P="P$?" #bug d'affichage apres le P15.10
     echo "concatenation de : $element"
     if [ ! -e "$repertoire_name/Pconc/Pconc$element.fastq" ]; then #concatene les fastq s'il n'existe pas
     {
@@ -112,9 +128,7 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
   #if [ ! -e "$repertoire_name/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
-  
   Pconc
-  
   srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $repertoire_name/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_name/seqkit/results_seqkit_all"
