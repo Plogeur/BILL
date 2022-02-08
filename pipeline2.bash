@@ -21,6 +21,17 @@ if [[ "$1" == -h ]]; then #boff
   echo "----------------------------------------------------------------------------------------------------------------------------"
 }
 fi
+if [[ "$@" == -r ]]; then 
+{
+  #reprendre
+  #vérifier la présence des repertoires, fichiers ...
+}
+fi
+if [[ "$@" == -v ]]; then 
+{
+  #extract_VSF
+}
+fi
 
 #Variable global
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
@@ -54,7 +65,7 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------ samtools flagstat : $1 ------------------ "
   srun -c 10 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
   cat $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
-  echo "------------------ plotCoverage : $1 ------------------ "
+  echo "------------------ deepTools : $1 ------------------ "
   srun -c 10 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
   srun -c 10 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
   echo "------------------ sniffles : $1 ------------------ "
@@ -62,7 +73,7 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
-  
+
   duration=$SECONDS
   echo "Temps de calcul pour $1 : $(($duration / 60)) minutes et $(($duration % 60)) secondes."
 }
@@ -176,7 +187,6 @@ function extract_VSF() {
   #do
 	#echo -e "${pos[${i}]}\t${svtype[${i}]}"
   #done
-
 }
 
 function main() {
