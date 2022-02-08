@@ -23,12 +23,14 @@ if [[ "$1" == -h ]]; then #boff
 fi
 if [[ "$@" == -r ]]; then 
 {
+  echo
   #reprendre
   #vérifier la présence des repertoires, fichiers ...
 }
 fi
 if [[ "$@" == -v ]]; then 
 {
+  echo
   #extract_VSF
 }
 fi
@@ -89,17 +91,19 @@ function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
   #copy all fastq seq in right folder
   srun -c 10 cp /students/BILL/commun/rouge/pass/*.fastq $1/P1/P1.2/
   srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode02/*.fastq $1/P15/P15.1/
-  srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/P15/P15.5/
   echo "Récupération des reads fastq."
+  srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode04/*.fastq $1/P15/P15.5/
   srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode05/*.fastq $1/P15/P15.6/
-  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/P15/P15.8/
   echo "Récupération des reads fastq.."
+  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode06/*.fastq $1/P15/P15.8/
   srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode08/*.fastq $1/P15/P15.10/
-  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/P33/P33.1/
   echo "Récupération des reads fastq..."
+  srun -c 10 cp /students/BILL/commun/vert/fastq_pass/barcode09/*.fastq $1/P33/P33.1/
+  echo "Récupération des reads fastq...."
   srun -c 10 cp /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/P33/P33.2/
   srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/P33/P33.6/
-   
+  echo "Fin de récupération des reads fastq"
+
   #seq ref
   cp /students/BILL/commun/REF/reference.fasta $1/seq_ref/
 }
@@ -151,9 +155,13 @@ function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des c
 
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
-  #if [ ! -e "$repertoire_name/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
-  Pconc
-  srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt | csvtk csv2md -t
+  if [ ! -e "$repertoire_name/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
+  {
+    Pconc
+  }
+  fi
+  srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt
+  #  srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $repertoire_name/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_name/seqkit/results_seqkit_all"
 }
@@ -195,7 +203,11 @@ read_entier='y' #par défaut on lance tout
 number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
 
-Create_folder_AND_Dl_file $repertoire_name
+if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	]; then
+{
+  Create_folder_AND_Dl_file $repertoire_name
+}
+fi
 
 seqkit_stats2
 
