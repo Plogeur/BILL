@@ -48,8 +48,8 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------------------------------------"
   echo "------------------ variant n°$3 : $1 ------------------"
   echo "------------------------------------------------ "
-  echo "------------------ FastQC seq : $1 ------------------"
-  srun -c 6 fastqc $repertoire_name/Pconc/Pconc$1.fastq 
+  #echo "------------------ FastQC seq : $1 ------------------"
+  #srun -c 6 fastqc $repertoire_name/Pconc/Pconc$1.fastq 
   echo "------------------ seqkit seq : $1 ------------------"
   srun -c 6 seqkit seq $repertoire_name/Pconc/Pconc$1.fastq -m $4 -o $repertoire_name/$2/$1/Pconc$4$1.fastq
   echo "------------------ mapping : $1 ------------------"
