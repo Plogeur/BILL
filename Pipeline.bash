@@ -85,6 +85,9 @@ function selecte() {
   fi
 }
 
+recursive_research() {
+
+}
 function main() {
 number=1
 read_entier='y' #par défaut on lance tout
