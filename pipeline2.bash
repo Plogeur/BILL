@@ -113,31 +113,34 @@ function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
 }
 
 function PycoQC() { #Effectue le PycoQC sur un seul échantillon
-
+  
   read -p "Sur quel barcode réaliser l'analyse PycoQC ? (bleu/rouge/vert/violet) " barcode
+
+  while ! [[ "$barcode" == "bleu" || "$barcode" == "rouge" || "$barcode" == "vert" || "$barcode" == "violet" ]]
+  do
+    read -p "Erreur de saisie, veuillez saisir un barcode parmit (bleu/rouge/vert/violet) : " barcode
+  done
     
   #remplacer les if par des cases 
   if [ "$barcode" == "bleu" ]; then #concatene les fastq s'il n'existe pas
-  {
+  
     pycoQC -f /students/BILL/commun/bleu/sequencing_summary_FAQ77496_51f08628.txt -o $repertoire_name/seq_bleu_pycoQC.html
-  }
-  fi 
-  if [ "$barcode" == "rouge" ]; then #concatene les fastq s'il n'existe pas
-  {
+
+  elif [ "$barcode" == "rouge" ]; then #concatene les fastq s'il n'existe pas
+  
     pycoQC -f /students/BILL/commun/rouge/sequencing_summary.txt -o $repertoire_name/seq_rouge_pycoQC.html
-  }
-  fi
-  if [ "$barcode" == "vert" ]; then #concatene les fastq s'il n'existe pas
-  {
+  
+  
+  elif [ "$barcode" == "vert" ]; then #concatene les fastq s'il n'existe pas
+  
     pycoQC -f /students/BILL/commun/vert/sequencing_summary_FAQ54249_f602c5a1.txt -o $repertoire_name/seq_vert_pycoQC.html
-  }
-  fi
-  if [ "$barcode" == "violet" ]; then #concatene les fastq s'il n'existe pas
-  {
+  
+  elif [ "$barcode" == "violet" ]; then #concatene les fastq s'il n'existe pas
+  
     pycoQC -f /students/BILL/commun/violet/sequencing_summary_FAQ54172_5ccb60ff.txt -o $repertoire_name/seq_violet_pycoQC.html
-  }
+
   fi
-  # TODO gerer l'erreur de saisie
+  # TODO gerer l'erreur de saisie avec une boucle
 
   echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_name"
 }
@@ -173,12 +176,12 @@ function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
 function selecte() { 
   if [[ "$1" == "P1.2" ]]; then
     return 1
-  fi
-  if [[ "$1" =~ P15.. ]]; then
+  elif [[ "$1" =~ P15.. ]]; then 
     return 15
-  fi
-  if [[ "$1" =~ P33.. ]]; then
+  elif [ "$1" =~ P33.. ]]; then
     return 33
+  else 
+    return 0
   fi
 }
 
@@ -200,23 +203,41 @@ read_entier='y' #par défaut on lance tout
 number_lenght='500' #par défaut taille 500 pour seqkit
 read_P='y' #par défaut on lance le P
 
-if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	]; then
+if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	]; then #test
 {
   Create_folder_AND_Dl_file $repertoire_name
 }
 fi
 
-#PycoQC
-seqkit_stats2
+PycoQC
+
+if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
+{
+  seqkit_stats2
+}
+fi 
 
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
+while ! [[ "$read_entier" == "n" || "$read_entier" == "no" || "$read_entier" == "non" || "$read_P" == "y" || "$read_P" == "yes" || "$read_P" == "oui" ]]
+do
+  read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_entier
+done
+
 read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
+while ! [[ $number_lenght =~ "^[0-9]+$" ]]
+do
+  read -p "Erreur de saisie, veuillez saisir un nombre entier >= 0 : " number_lenght
+done
 
 for element in $list_P
 do
   if [ "$read_entier" == "n" ] || [ "$read_entier" == "no" ] || [ "$read_entier" == "non" ]; then #lancement un par un activer
   {
     read -p "Voulez-vous lancer le $element ? (y/n) " read_P
+    while ! [[ "$read_P" == "n" || "$read_P" == "no" || "$read_P" == "non" ]]
+    do
+      read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_P
+    done
     if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
     {
       selecte $element
@@ -225,13 +246,14 @@ do
     }
     fi
   } 
-  else [ "$read_entier" == "y" ] || [ "$read_entier" == "yes" ] || [ "$read_entier" == "oui" ] # lancement entier
+  elif [ "$read_entier" == "y" ] || [ "$read_entier" == "yes" ] || [ "$read_entier" == "oui" ]; then  # lancement entier
   {
     selecte $element
     type_P="P$?"
     pipeline $element $type_P $number $number_lenght
   }
-  fi  
+  fi
+
   number=$(($number+1)) #nombres de tour de boucle  
 done
 }
