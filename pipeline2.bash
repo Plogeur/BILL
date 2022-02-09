@@ -178,7 +178,7 @@ function selecte() {
     return 1
   elif [[ "$1" =~ P15.. ]]; then 
     return 15
-  elif [ "$1" =~ P33.. ]]; then
+  elif [[ "$1" =~ P33.. ]]; then
     return 33
   else 
     return 0
@@ -197,6 +197,7 @@ function traitement_VSF() {
   echo "------------------ Traitement VSF : $1 ------------------ "
   sed '/STRANDBIAS/d' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
 }
+
 function main() {
 number=1 #number of variant 
 read_entier='y' #par défaut on lance tout
@@ -209,7 +210,7 @@ if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	
 }
 fi
 
-PycoQC
+#PycoQC #à des commenter à la fin !
 
 if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
 {
@@ -218,13 +219,13 @@ if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
 fi 
 
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
-while ! [[ "$read_entier" == "n" || "$read_entier" == "no" || "$read_entier" == "non" || "$read_P" == "y" || "$read_P" == "yes" || "$read_P" == "oui" ]]
+while ! [[ "$read_entier" == "n" || "$read_entier" == "no" || "$read_entier" == "non" || "$read_entier" == "y" || "$read_entier" == "yes" || "$read_entier" == "oui" ]]
 do
   read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_entier
 done
 
 read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
-while ! [[ $number_lenght =~ "^[0-9]+$" ]]
+while [[ $number_lenght =~ "^[0-9]+$" ]]
 do
   read -p "Erreur de saisie, veuillez saisir un nombre entier >= 0 : " number_lenght
 done
@@ -234,7 +235,7 @@ do
   if [ "$read_entier" == "n" ] || [ "$read_entier" == "no" ] || [ "$read_entier" == "non" ]; then #lancement un par un activer
   {
     read -p "Voulez-vous lancer le $element ? (y/n) " read_P
-    while ! [[ "$read_P" == "n" || "$read_P" == "no" || "$read_P" == "non" ]]
+    while ! [[ "$read_P" == "n" || "$read_P" == "no" || "$read_P" == "non" || "$read_P" == "y"  ||  "$read_P" == "yes" ||  "$read_P" == "oui" ]]
     do
       read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_P
     done
