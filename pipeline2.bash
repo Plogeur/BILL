@@ -48,31 +48,35 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------------------------------------"
   echo "------------------ variant n°$3 : $1 ------------------"
   echo "------------------------------------------------ "
+  echo "------------------ FastQC seq : $1 ------------------"
+  srun -c 6 fastqc $repertoire_name/Pconc/Pconc$1.fastq 
   echo "------------------ seqkit seq : $1 ------------------"
-  srun -c 10 seqkit seq $repertoire_name/$2/$1/Pconc/Pconc$1.fastq -m $4 -o $repertoire_name/$2/$1/Pconc/Pconc$4$1.fastq
+  srun -c 6 seqkit seq $repertoire_name/Pconc/Pconc$1.fastq -m $4 -o $repertoire_name/$2/$1/Pconc$4$1.fastq
   echo "------------------ mapping : $1 ------------------"
-  srun -c 10 minimap2 --MD -ax map-ont -t 6 $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/Pconc$4$1.fastq -o $repertoire_name/$2/$1/mapping$4$1.sam
+  srun -c 6 minimap2 --MD -ax map-ont -t 6 $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/Pconc$4$1.fastq -o $repertoire_name/$2/$1/mapping$4$1.sam
   echo "------------------ samtools view1 : $1 ------------------"
-  srun -c 10 samtools view -ubS -@ 4 $repertoire_name/$2/$1/mapping$4$1.sam -o $repertoire_name/$2/$1/mapping$4$1.bam
+  srun -c 6 samtools view -ubS -@ 4 $repertoire_name/$2/$1/mapping$4$1.sam -o $repertoire_name/$2/$1/mapping$4$1.bam
   echo "Conversion réussie du fichier mapping$4$1 du .sam en .bam"
   echo "------------------ samtools : $1 ------------------"
-  srun -c 10 samtools sort -l 0 -@ 4 -o $repertoire_name/$2/$1/mapping$4$1.sorted.bam $repertoire_name/$2/$1/mapping$4$1.bam
+  srun -c 6 samtools sort -l 0 -@ 4 -o $repertoire_name/$2/$1/mapping$4$1.sorted.bam $repertoire_name/$2/$1/mapping$4$1.bam
   echo "Trie réussie du fichier mapping$4$1.bam"
   echo "------------------ samtools view2 : $1 ------------------"
-  srun -c 10 samtools view -h -F 4 -b $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam
+  srun -c 6 samtools view -h -F 4 -b $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam
   echo "Mappage réussie du fichier trier mapping$4$1.bam"
   echo "------------------ samtools index : $1 ------------------"
-  srun -c 10 samtools index $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bai
+  srun -c 6 samtools index $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bai
   echo "Indexation réussite pour le fichier mapping$4$1"
   echo "------------------ samtools flagstat : $1 ------------------ "
-  srun -c 10 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
+  srun -c 6 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
   cat $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
   echo "------------------ deepTools : $1 ------------------ "
-  srun -c 10 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
-  srun -c 10 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
+  srun -c 6 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
+  srun -c 6 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
   echo "------------------ sniffles : $1 ------------------ "
-  srun -c 12 sniffles -l 0 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  srun -c 6 sniffles -l 0 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  echo "------------------ Traitement VCF : $1 ------------------ "
+  sed -n '/AP008984.1STRANDBIAS/!p' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf > $repertoire_name/$2/$1/mapping$4$1_traited.sorted.mapped.vcf
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
 
@@ -138,7 +142,7 @@ function PycoQC() { #Effectue le PycoQC sur un seul échantillon
   echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_name"
 }
 
-function Pconc() { #Fait le PconcALL avec fesant le cat des fastq + le cat des cat
+function Pconc() { #Fait le PconcALL avec faisant le cat des fastq + le cat des cat
   for element in $list_P
   do
     selecte $element
@@ -161,7 +165,7 @@ function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   }
   fi
   srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt
-  #  srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt | csvtk csv2md -t
+  #srun -c 10 seqkit stats $repertoire_name/PconcAll.fastq -o $repertoire_name/seqkit/results_seqkit_all.txt | csvtk csv2md -t
   cat $repertoire_name/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_name/seqkit/results_seqkit_all"
 }
@@ -178,25 +182,18 @@ function selecte() {
   fi
 }
 
-function extract_VSF() {
+function extract_VSF() { #récupère les INS/DEL avec une profondeur 
   echo "------------------ extraction VSF : $1 ------------------ "
   #nbSup=$(grep -c "SVTYPE=DEL" "$entete".vcf)
   #echo "Il y a " $nbSup " délétion"
   #nbIns=$(grep -c "SVTYPE=INS" "$entete".vcf)
   #echo "Il y a " $nbIns " insertion"
-
-  #pos=`cat ${1} | grep -v "^#" | cut -f 2`
-  #svtype=`cat ${1} | grep -o "SVTYPE=..."`
-  #ref=
-  #pos=($pos)
-  #svtype=($svtype)
-  #echo -e "POS\tSVTYPE"
-  #for i in `seq 0 1 ${#pos[@]}`
-  #do
-	#echo -e "${pos[${i}]}\t${svtype[${i}]}"
-  #done
 }
 
+function traitement_VSF() {
+  echo "------------------ Traitement VSF : $1 ------------------ "
+  sed '/STRANDBIAS/d' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+}
 function main() {
 number=1 #number of variant 
 read_entier='y' #par défaut on lance tout
@@ -209,6 +206,7 @@ if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	
 }
 fi
 
+#PycoQC
 seqkit_stats2
 
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
