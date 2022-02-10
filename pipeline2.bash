@@ -73,7 +73,7 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   srun -c 6 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
   srun -c 6 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
   echo "------------------ sniffles : $1 ------------------ "
-  srun -c 6 sniffles -l 0 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  srun -c 6 sniffles -l 30 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   echo "------------------ Traitement VCF : $1 ------------------ "
   sed -n '/AP008984.1STRANDBIAS/!p' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf > $repertoire_name/$2/$1/mapping$4$1_traited.sorted.mapped.vcf
@@ -185,8 +185,9 @@ function selecte() {
   fi
 }
 
-function extract_VSF() { #récupère les INS/DEL avec une profondeur 
+function extract_VCF() { #récupère les INS/DEL avec une profondeur 
   echo "------------------ extraction VSF : $1 ------------------ "
+  #RE>20
   #nbSup=$(grep -c "SVTYPE=DEL" "$entete".vcf)
   #echo "Il y a " $nbSup " délétion"
   #nbIns=$(grep -c "SVTYPE=INS" "$entete".vcf)
@@ -225,7 +226,7 @@ do
 done
 
 read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
-while [[ $number_lenght =~ "^[0-9]+$" ]]
+while ! [[ $number_lenght =~ ^[0-9]+$ ]]
 do
   read -p "Erreur de saisie, veuillez saisir un nombre entier >= 0 : " number_lenght
 done
