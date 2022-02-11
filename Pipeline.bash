@@ -48,35 +48,38 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------------------------------------"
   echo "------------------ variant n°$3 : $1 ------------------"
   echo "------------------------------------------------ "
-  echo "------------------ FastQC seq : $1 ------------------"
-  srun -c 6 fastqc $repertoire_name/Pconc/Pconc$1.fastq 
+  #echo "------------------ FastQC seq : $1 ------------------"
+  #srun -c 6 fastqc $repertoire_name/Pconc/Pconc$1.fastq
   echo "------------------ seqkit seq : $1 ------------------"
-  srun -c 6 seqkit seq $repertoire_name/Pconc/Pconc$1.fastq -m $4 -o $repertoire_name/$2/$1/Pconc$4$1.fastq
+  srun -c 10 seqkit seq $repertoire_name/Pconc/Pconc$1.fastq -m $4 -o $repertoire_name/$2/$1/Pconc$4$1.fastq
   echo "------------------ mapping : $1 ------------------"
-  srun -c 6 minimap2 --MD -ax map-ont -t 6 $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/Pconc$4$1.fastq -o $repertoire_name/$2/$1/mapping$4$1.sam
+  srun -c 10 minimap2 --MD -ax map-ont -t 6 $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/Pconc$4$1.fastq -o $repertoire_name/$2/$1/mapping$4$1.sam
   echo "------------------ samtools view1 : $1 ------------------"
-  srun -c 6 samtools view -ubS -@ 4 $repertoire_name/$2/$1/mapping$4$1.sam -o $repertoire_name/$2/$1/mapping$4$1.bam
+  srun -c 10 samtools view -ubS -@ 4 $repertoire_name/$2/$1/mapping$4$1.sam -o $repertoire_name/$2/$1/mapping$4$1.bam
   echo "Conversion réussie du fichier mapping$4$1 du .sam en .bam"
   echo "------------------ samtools : $1 ------------------"
-  srun -c 6 samtools sort -l 0 -@ 4 -o $repertoire_name/$2/$1/mapping$4$1.sorted.bam $repertoire_name/$2/$1/mapping$4$1.bam
+  srun -c 10 samtools sort -l 0 -@ 4 -o $repertoire_name/$2/$1/mapping$4$1.sorted.bam $repertoire_name/$2/$1/mapping$4$1.bam
   echo "Trie réussie du fichier mapping$4$1.bam"
   echo "------------------ samtools view2 : $1 ------------------"
-  srun -c 6 samtools view -h -F 4 -b $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam
+  srun -c 10 samtools view -h -F 4 -b $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam
   echo "Mappage réussie du fichier trier mapping$4$1.bam"
   echo "------------------ samtools index : $1 ------------------"
-  srun -c 6 samtools index $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bai
+  srun -c 10 samtools index $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bai
   echo "Indexation réussite pour le fichier mapping$4$1"
   echo "------------------ samtools flagstat : $1 ------------------ "
-  srun -c 6 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
+  srun -c 10 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
   cat $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
   echo "------------------ deepTools : $1 ------------------ "
-  srun -c 6 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
-  srun -c 6 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
+  srun -c 10 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
+  srun -c 10 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
   echo "------------------ sniffles : $1 ------------------ "
-  srun -c 6 sniffles -l 0 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  srun -c 10 sniffles -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   echo "------------------ Traitement VCF : $1 ------------------ "
   sed -n '/AP008984.1STRANDBIAS/!p' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf > $repertoire_name/$2/$1/mapping$4$1_traited.sorted.mapped.vcf
+  #echo "------------------ VCF_tools : $1 ------------------ "
+  #./VCF_tools.sh
+  #vcftools --vcf vcf1.vcf --diff vcf2.vcf --dif -site --out vcf1_vcf2.out
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
 
@@ -116,9 +119,9 @@ function PycoQC() { #Effectue le PycoQC sur un seul échantillon
   
   read -p "Sur quel barcode réaliser l'analyse PycoQC ? (bleu/rouge/vert/violet) " barcode
 
-  while ! [[ "$barcode" == "bleu"] || ["$barcode" == "rouge"] ||  ["$barcode" == "vert"] || ["$barcode" == "violet" ]]
+  while ! [[ "$barcode" == "bleu" || "$barcode" == "rouge" || "$barcode" == "vert" || "$barcode" == "violet" ]]
   do
-    read -p "Erreur de saisie, veuillez saisir un barcode parmit : bleu/rouge/vert/violet " barcode
+    read -p "Erreur de saisie, veuillez saisir un barcode parmit (bleu/rouge/vert/violet) : " barcode
   done
     
   #remplacer les if par des cases 
@@ -140,7 +143,6 @@ function PycoQC() { #Effectue le PycoQC sur un seul échantillon
     pycoQC -f /students/BILL/commun/violet/sequencing_summary_FAQ54172_5ccb60ff.txt -o $repertoire_name/seq_violet_pycoQC.html
 
   fi
-  # TODO gerer l'erreur de saisie avec une boucle
 
   echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_name"
 }
@@ -178,15 +180,16 @@ function selecte() {
     return 1
   elif [[ "$1" =~ P15.. ]]; then 
     return 15
-  elif [ "$1" =~ P33.. ]]; then
+  elif [[ "$1" =~ P33.. ]]; then
     return 33
   else 
     return 0
   fi
 }
 
-function extract_VSF() { #récupère les INS/DEL avec une profondeur 
+function extract_VCF() { #récupère les INS/DEL avec une profondeur 
   echo "------------------ extraction VSF : $1 ------------------ "
+  #RE>20
   #nbSup=$(grep -c "SVTYPE=DEL" "$entete".vcf)
   #echo "Il y a " $nbSup " délétion"
   #nbIns=$(grep -c "SVTYPE=INS" "$entete".vcf)
@@ -196,7 +199,11 @@ function extract_VSF() { #récupère les INS/DEL avec une profondeur
 function traitement_VSF() {
   echo "------------------ Traitement VSF : $1 ------------------ "
   sed '/STRANDBIAS/d' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  #grep -v "#"
+  #cut - f
+  #
 }
+
 function main() {
 number=1 #number of variant 
 read_entier='y' #par défaut on lance tout
@@ -209,7 +216,7 @@ if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	
 }
 fi
 
-PycoQC
+#PycoQC #à des commenter à la fin !
 
 if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
 {
@@ -218,15 +225,15 @@ if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
 fi 
 
 read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
-while ! [[ "$read_entier" == "n" ] || [ "$read_entier" == "no" ] || [ "$read_entier" == "non" ] || [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]]
+while ! [[ "$read_entier" == "n" || "$read_entier" == "no" || "$read_entier" == "non" || "$read_entier" == "y" || "$read_entier" == "yes" || "$read_entier" == "oui" ]]
 do
-  read -p "Erreur de saisie, veuillez saisir parmit : yes/y/oui/n/no/non " read_entier
+  read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_entier
 done
 
 read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
-while ! [[ $number_lenght =~ "^[0-9]+$" ]] ; then
+while ! [[ $number_lenght =~ ^[0-9]+$ ]]
 do
-  read -p "Erreur de saisie, veuillez saisir un nombre entier >= 0 " number_lenght
+  read -p "Erreur de saisie, veuillez saisir un nombre entier >= 0 : " number_lenght
 done
 
 for element in $list_P
@@ -234,9 +241,9 @@ do
   if [ "$read_entier" == "n" ] || [ "$read_entier" == "no" ] || [ "$read_entier" == "non" ]; then #lancement un par un activer
   {
     read -p "Voulez-vous lancer le $element ? (y/n) " read_P
-    while ! [[ "$read_P" == "n" ] || [ "$read_P" == "no" ] || [ "$read_P" == "non" ]]
+    while ! [[ "$read_P" == "n" || "$read_P" == "no" || "$read_P" == "non" || "$read_P" == "y"  ||  "$read_P" == "yes" ||  "$read_P" == "oui" ]]
     do
-      read -p "Erreur de saisie, veuillez saisir parmit : yes/y/oui/n/no/non " read_P
+      read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_P
     done
     if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
     {
@@ -259,3 +266,5 @@ done
 }
 
 main
+
+echo "Fin du programme"
