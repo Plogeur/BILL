@@ -73,10 +73,19 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   srun -c 6 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
   srun -c 6 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
   echo "------------------ sniffles : $1 ------------------ "
-  srun -c 6 sniffles -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
-  head $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  #srun -c 10 sniffles -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  srun -c 10 sniffles --allelefreq 0.1 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   echo "------------------ Traitement VCF : $1 ------------------ "
   sed -n '/AP008984.1STRANDBIAS/!p' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf > $repertoire_name/$2/$1/mapping$4$1_traited.sorted.mapped.vcf
+  echo "------------------ medaka : $1 ------------------ "
+  srun -c 10 medaka consensus --model r941_min_hac_g507 --threads 2 --bam_workers $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf
+  srun -c 10 medaka snp $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.snp.vcf
+  echo "Détermination des SNP... "
+  srun -c 10 medaka variant $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.variant.vcf
+  echo "Détermination des SNV... "
+  #echo "------------------ VCF_tools : $1 ------------------ "
+  #./VCF_tools.sh
+  #vcftools --vcf vcf1.vcf --diff vcf2.vcf --dif -site --out vcf1_vcf2.out
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
 
