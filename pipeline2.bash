@@ -19,12 +19,10 @@ repertoire_name="/students/BILL/ines.boussiere/test/TP_2022"
 
 if [[ "$1" == -h ]]; then #boff
 {
-  echo "----------------------------------------------------------------------------------------------------------------------------"
-  echo "Ce script permet d'analyser un fichier fastq et d'en mapper les reads d'une certaine longueur sur une séquence de référence"
-  echo "Le premier paramètre doit être "
-  echo "Le second paramètre doit être "
-  echo "Le troisième et dernier paramètre doit être "
-  echo "----------------------------------------------------------------------------------------------------------------------------"
+  echo "-r : Permet de reprendre le pipeline"
+  echo "-v :  Permet de l'extraction d'information depuis le VCF"
+  echo "-t : Permet la comparaison de 2 VCF depuis VCF_Tools"
+  echo "-tb : Permet la comparaison de 2 VCF depuis VCF_Tools et le Blast des différences sur NCBI"
 }
 fi
 if [[ "$@" == -r ]]; then 
@@ -37,7 +35,7 @@ fi
 if [[ "$@" == -v ]]; then 
 {
   echo
-  #extract_VSF
+  #extract_VCF
 }
 fi
 
@@ -92,16 +90,13 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   sed -n '/AP008984.1STRANDBIAS/!p' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf > $repertoire_name/$2/$1/mapping$4$1_traited.sorted.mapped.vcf
   echo "------------------ medaka : $1 ------------------ "
   srun -c 10 medaka consensus --model r941_min_hac_g507 --threads 2 --bam_workers $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf
-  srun -c 10 medaka snp $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.snp.vcf
   echo "Détermination des SNP... "
-  srun -c 10 medaka variant $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.variant.vcf
+  srun -c 10 medaka snp $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.snp.vcf
   echo "Détermination des SNV... "
-  #echo "------------------ VCF_tools : $1 ------------------ "
-  #./VCF_tools.sh
-  #vcftools --vcf vcf1.vcf --diff vcf2.vcf -site --out vcf1_vcf2.out
-  #echo "------------------ IGV : $1 ------------------ "
-  #commun/igv.sh
-
+  srun -c 10 medaka variant $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.indel.vcf
+  echo "------------------ VCF_tools : $1 sur P1.2 ------------------ "
+  vcftools --vcf $repertoire_name/P1/P1.2/mapping1000P1.2.sorted.mapped.vcf --diff $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf --diff-site --out $repertoire_name/DIFF/vcf_P1.2_vcf_$1.out
+  
   duration=$SECONDS
   echo "Temps de calcul pour $1 : $(($duration / 60)) minutes et $(($duration % 60)) secondes."
 }
@@ -239,7 +234,7 @@ function VCF_tools() {
   selecte $d_emeP
   type_P2="P$?"
   echo "------------------ VCF_tools : $p_erP $d_emeP ------------------ "
-  vcftools --vcf $repertoire_name/$type_P1/$p_erP/mapping1000$p_erP.sorted.mapped.vcf --diff $repertoire_name/$type_P2/$d_emeP/mapping1000$d_emeP.sorted.mapped.vcf --dif -site --out  $repertoire_name/DIFF/$p_erP$d_emeP.out
+  vcftools --vcf $repertoire_name/$type_P1/$p_erP/mapping1000$p_erP.sorted.mapped.vcf --diff $repertoire_name/$type_P2/$d_emeP/mapping1000$d_emeP.sorted.mapped.vcf --diff-site --out $repertoire_name/DIFF/$p_erP$d_emeP.out
   echo "Fin du programme"
   exit 
 }
