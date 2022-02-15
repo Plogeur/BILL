@@ -98,7 +98,7 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "Détermination des SNV... "
   #echo "------------------ VCF_tools : $1 ------------------ "
   #./VCF_tools.sh
-  #vcftools --vcf vcf1.vcf --diff vcf2.vcf --dif -site --out vcf1_vcf2.out
+  #vcftools --vcf vcf1.vcf --diff vcf2.vcf -site --out vcf1_vcf2.out
   #echo "------------------ IGV : $1 ------------------ "
   #commun/igv.sh
 
