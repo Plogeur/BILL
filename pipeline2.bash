@@ -7,9 +7,15 @@
 #Génère les .fastq .sam .bam .sorted.bam .sorted.mapped.bam .sorted.mapped.bai .sorted.flagst   #
 #.sorted.mapped.vcf .pdf et .bedgraph                                                           #
 #Ainsi que des txt avec des stats (seqkit, flags,...)                                           #
-#Ce script ne permet pas l'analyse par IGV                                                      #
+#Ce script ne permet pas la representation par IGV                                              #
 #                                                                                               #
 #################################################################################################
+
+#Variable global
+list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
+#à modifier
+read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)" input
+repertoire_name="/students/BILL/ines.boussiere/test/TP_2022"
 
 if [[ "$1" == -h ]]; then #boff
 {
@@ -35,11 +41,18 @@ if [[ "$@" == -v ]]; then
 }
 fi
 
-#Variable global
-list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
-#à modifier
-read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)" input
-repertoire_name="/students/BILL/ines.boussiere/test/TP_2022"
+if [[ "$@" == -t ]]; then 
+{
+  VCF_tools
+}
+fi
+
+if [[ "$@" == -tb ]]; then 
+{
+  VCF_tools
+  Blast
+}
+fi
 
 function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et sniffles
 {
@@ -49,29 +62,29 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   echo "------------------ variant n°$3 : $1 ------------------"
   echo "------------------------------------------------ "
   #echo "------------------ FastQC seq : $1 ------------------"
-  #srun -c 6 fastqc $repertoire_name/Pconc/Pconc$1.fastq 
+  #srun -c 2 fastqc $repertoire_name/Pconc/Pconc$1.fastq
   echo "------------------ seqkit seq : $1 ------------------"
-  srun -c 6 seqkit seq $repertoire_name/Pconc/Pconc$1.fastq -m $4 -o $repertoire_name/$2/$1/Pconc$4$1.fastq
+  #srun -c 10 seqkit seq $repertoire_name/Pconc/Pconc$1.fastq -m $4 -o $repertoire_name/$2/$1/Pconc$4$1.fastq
   echo "------------------ mapping : $1 ------------------"
-  srun -c 6 minimap2 --MD -ax map-ont -t 6 $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/Pconc$4$1.fastq -o $repertoire_name/$2/$1/mapping$4$1.sam
+  #srun -c 10 minimap2 --MD -ax map-ont -t 6 $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/Pconc$4$1.fastq -o $repertoire_name/$2/$1/mapping$4$1.sam
   echo "------------------ samtools view1 : $1 ------------------"
-  srun -c 6 samtools view -ubS -@ 4 $repertoire_name/$2/$1/mapping$4$1.sam -o $repertoire_name/$2/$1/mapping$4$1.bam
+  #srun -c 10 samtools view -ubS -@ 4 $repertoire_name/$2/$1/mapping$4$1.sam -o $repertoire_name/$2/$1/mapping$4$1.bam
   echo "Conversion réussie du fichier mapping$4$1 du .sam en .bam"
   echo "------------------ samtools : $1 ------------------"
-  srun -c 6 samtools sort -l 0 -@ 4 -o $repertoire_name/$2/$1/mapping$4$1.sorted.bam $repertoire_name/$2/$1/mapping$4$1.bam
+  #srun -c 10 samtools sort -l 0 -@ 4 -o $repertoire_name/$2/$1/mapping$4$1.sorted.bam $repertoire_name/$2/$1/mapping$4$1.bam
   echo "Trie réussie du fichier mapping$4$1.bam"
   echo "------------------ samtools view2 : $1 ------------------"
-  srun -c 6 samtools view -h -F 4 -b $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam
+  #srun -c 10 samtools view -h -F 4 -b $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam
   echo "Mappage réussie du fichier trier mapping$4$1.bam"
   echo "------------------ samtools index : $1 ------------------"
-  srun -c 6 samtools index $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bai
+  #srun -c 10 samtools index $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bai
   echo "Indexation réussite pour le fichier mapping$4$1"
   echo "------------------ samtools flagstat : $1 ------------------ "
-  srun -c 6 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
-  cat $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
+  #srun -c 10 samtools flagstat $repertoire_name/$2/$1/mapping$4$1.sorted.bam > $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
+  #cat $repertoire_name/$2/$1/mapping$4$1.sorted.flagst
   echo "------------------ deepTools : $1 ------------------ "
-  srun -c 6 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
-  srun -c 6 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
+  #srun -c 10 plotCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/plotCoverage$4$1.pdf --smartLabels -T $repertoire_name/$2/$1/plotCoverage$4$1 --outRawCounts $repertoire_name/$2/$1/outRawCounts$4$1.txt --outCoverageMetrics $repertoire_name/$2/$1/outCoverageMetrics$4$1.txt --plotFileFormat pdf -p 10
+  #srun -c 10 bamCoverage -b $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -o $repertoire_name/$2/$1/bamCoverage$4$1.bedgraph -of "bedgraph" -p 10 --effectiveGenomeSize 295052 --normalizeUsing RPGC
   echo "------------------ sniffles : $1 ------------------ "
   #srun -c 10 sniffles -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   srun -c 10 sniffles --allelefreq 0.1 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
@@ -149,7 +162,6 @@ function PycoQC() { #Effectue le PycoQC sur un seul échantillon
     pycoQC -f /students/BILL/commun/violet/sequencing_summary_FAQ54172_5ccb60ff.txt -o $repertoire_name/seq_violet_pycoQC.html
 
   fi
-  # TODO gerer l'erreur de saisie avec une boucle
 
   echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_name"
 }
@@ -194,6 +206,14 @@ function selecte() {
   fi
 }
 
+function Blast() {
+echo "------------------ Blast : ------------------ "
+#recuperation des pos dans le fichier .out
+#recuperation de la séquence ref avec la pos
+#blaster 
+#output terminal ou browser ? 
+}
+
 function extract_VCF() { #récupère les INS/DEL avec une profondeur 
   echo "------------------ extraction VSF : $1 ------------------ "
   #RE>20
@@ -203,9 +223,25 @@ function extract_VCF() { #récupère les INS/DEL avec une profondeur
   #echo "Il y a " $nbIns " insertion"
 }
 
-function traitement_VSF() {
+function traitement_VCF() {
   echo "------------------ Traitement VSF : $1 ------------------ "
   sed '/STRANDBIAS/d' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
+  #grep -v "#"
+  #cut - f
+  #
+}
+
+function VCF_tools() {
+  read -p "Quelles séquences voulez-vous comparer avec VCF_tools ? " p_erP d_emeP
+  #while ($p_erP==$d_emeP || ! ($p_erP=='P1.2')) #monkey proof
+  selecte $p_erP
+  type_P1="P$?"
+  selecte $d_emeP
+  type_P2="P$?"
+  echo "------------------ VCF_tools : $p_erP $d_emeP ------------------ "
+  vcftools --vcf $repertoire_name/$type_P1/$p_erP/mapping1000$p_erP.sorted.mapped.vcf --diff $repertoire_name/$type_P2/$d_emeP/mapping1000$d_emeP.sorted.mapped.vcf --dif -site --out  $repertoire_name/DIFF/$p_erP$d_emeP.out
+  echo "Fin du programme"
+  exit 
 }
 
 function main() {
@@ -270,3 +306,5 @@ done
 }
 
 main
+
+echo "Fin du programme"
