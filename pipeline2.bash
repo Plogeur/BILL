@@ -88,12 +88,13 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   srun -c 10 sniffles --allelefreq 0.1 -m $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam -t 4 -v $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
   echo "------------------ Traitement VCF : $1 ------------------ "
   sed -n '/AP008984.1STRANDBIAS/!p' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf > $repertoire_name/$2/$1/mapping$4$1_traited.sorted.mapped.vcf
+  echo "traitement effectuer !"
   echo "------------------ medaka : $1 ------------------ "
   srun -c 10 medaka consensus --model r941_min_hac_g507 --threads 2 --bam_workers $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.bam $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf
   echo "Détermination des SNP... "
   srun -c 10 medaka snp $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.snp.vcf
   echo "Détermination des SNV... "
-  srun -c 10 medaka variant $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.indel.vcf
+  srun -c 10 medaka variant $repertoire_name/seq_ref/reference.fasta $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.hdf $repertoire_name/$2/$1/mapping$4$1.snv.vcf
   echo "------------------ VCF_tools : $1 sur P1.2 ------------------ "
   vcftools --vcf $repertoire_name/P1/P1.2/mapping1000P1.2.sorted.mapped.vcf --diff $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf --diff-site --out $repertoire_name/DIFF/vcf_P1.2_vcf_$1.out
   
