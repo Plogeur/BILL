@@ -161,6 +161,44 @@ function VCF_tools() {
 
 function main() {
 number=1 #number of variant 
+while getopts ":hrvtp:" option;; do
+  case $option in
+    h) # display Help
+      Help
+      exit
+      ;;
+    v) # Enter a name
+      if [[ "$#" != "2" ]]; then 
+      {
+        echo "Erreur, le nombre d'argument n'est pas valide (on attend la taille minimun pour les indel)"
+        exit
+      }
+      fi
+      extract_VCF
+      #shift 1
+      exit
+      ;;
+    t)
+      if [[ "$#" != "3" ]]; then 
+      {
+        echo "Erreur, le nombre d'argument n'est pas valide (on attend 2 noms de passage, ex : (-t P33.1 P15.6))"
+        exit
+      }
+      fi
+      VCF_tools
+      #shift 2
+      exit
+      ;;
+    p)
+    echo ""
+    exit
+    ;;
+    \?) # Invalid option
+      echo "Error: Invalid option"
+      exit
+      ;;
+  esac
+done
 
 Search
 read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
