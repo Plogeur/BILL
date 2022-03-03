@@ -13,9 +13,10 @@
 
 #à modifier
 repertoire_name="$1"
+repertoire_actuel=$"(cd $( dirname ${BASH_SOURCE[0]}) && pwd )"
 read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)" input
 
-if [[ "$@" == -h ]]; then #boff
+function help() 
 {
   echo "-r : Permet d'effectuer les tests de qualité"
   echo "-g : Permet d'effectuer les tests de qualité"
@@ -23,7 +24,7 @@ if [[ "$@" == -h ]]; then #boff
   echo "-t : Permet la comparaison de 2 VCF depuis VCF_Tools"
   echo "-tb : Permet la comparaison de 2 VCF depuis VCF_Tools et le Blast des différences sur NCBI"
 }
-fi
+
 if [[ "$@" == -r ]]; then 
 {
   pycoQC 
@@ -40,13 +41,11 @@ if [[ "$@" == -v ]]; then
   extract_VCF
 }
 fi
-
 if [[ "$@" == -t ]]; then 
 {
   VCF_tools
 }
 fi
-
 if [[ "$@" == -tb ]]; then 
 {
   VCF_tools
@@ -103,8 +102,8 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
 }
 
 function PycoQC() { #Effectue le PycoQC sur un seul échantillon
-pycoQC -f $2 -o $2/seq_bleu_pycoQC.html
-echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_name"
+pycoQC -f $2 -o $repertoire_actuel
+echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_actuel"
 }
 
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
@@ -118,9 +117,8 @@ function Search() { #generalisation
   for folder in $(find $1 -type d)
     do
     if [[ -f *.fastq ]]; then
-    List_P_rep += $(cd $( dirname ${BASH_SOURCE[0]}) && pwd )
+    List_P_rep+="$(cd $( dirname ${BASH_SOURCE[0]}) && pwd )"
     Pconc
-
     fi
   done
 }
@@ -151,46 +149,55 @@ function traitement_VCF() {
 }
 
 function VCF_tools() {
-  read -p "Quelles séquences voulez-vous comparer avec VCF_tools ? " Rp_erP Rd_emeP
   echo "------------------ VCF_tools ------------------ "
-  Repertoire="$(cd $( dirname ${BASH_SOURCE[0]}) && pwd )"
-  vcftools --vcf $Rp_erP.sorted.mapped.vcf --diff $Rd_emeP.sorted.mapped.vcf --diff-site --out $Repertoire.out
+  vcftools --vcf $2 --diff $3 --diff-site --out $repertoire_actuel.out
   echo "Fin du programme"
   exit 
 }
 
 function main() {
 number=1 #number of variant 
+
 while getopts ":hrvtp:" option;; do
   case $option in
     h) # display Help
       Help
       exit
       ;;
-    v) # Enter a name
+    r) #pycoQC
+    if [[ "$#" != "2" ]]; then 
+      {
+        echo "Erreur, le nombre d'argument n'est pas valide (on attend le chemin du fichier summary)"
+        exit
+      }
+      fi
+      pycoQC
+      exit
+      ;;
+    v) # extract_VCF
       if [[ "$#" != "2" ]]; then 
       {
-        echo "Erreur, le nombre d'argument n'est pas valide (on attend la taille minimun pour les indel)"
+        echo "Erreur, le nombre d'argument n'est pas valide (on attend le chemin d'un fichier VCF)"
         exit
       }
       fi
       extract_VCF
-      #shift 1
       exit
       ;;
     t)
       if [[ "$#" != "3" ]]; then 
       {
-        echo "Erreur, le nombre d'argument n'est pas valide (on attend 2 noms de passage, ex : (-t P33.1 P15.6))"
+        echo "Erreur, le nombre d'argument n'est pas valide (on attend le chemin de 2 fichier VCF à comparer)"
         exit
       }
       fi
       VCF_tools
-      #shift 2
       exit
       ;;
     p)
-    echo ""
+    echo "working progress"
+    #VCF_tools
+    #Blast
     exit
     ;;
     \?) # Invalid option
