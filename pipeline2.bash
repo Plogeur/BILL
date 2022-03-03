@@ -193,7 +193,10 @@ function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
 function Search () { #generalisation 
   for folder in $(find $1 -type d)
 do
+   
   if [[ -f *.fastq ]]; then
+  List_P_rep += $(cd $( dirname ${BASH_SOURCE[0]}) && pwd )
+  Pconc
 
   fi
 done
@@ -254,29 +257,9 @@ function VCF_tools() {
 
 function main() {
 number=1 #number of variant 
-read_entier='y' #par défaut on lance tout
-number_lenght='500' #par défaut taille 500 pour seqkit
-read_P='y' #par défaut on lance le P
-
-if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	]; then #test
-{
-  Create_folder_AND_Dl_file $repertoire_name
-}
-fi
 
 PycoQC
-
-if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
-{
-  seqkit_stats2
-}
-fi 
-
-read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
-while ! [[ "$read_entier" == "n" || "$read_entier" == "no" || "$read_entier" == "non" || "$read_entier" == "y" || "$read_entier" == "yes" || "$read_entier" == "oui" ]]
-do
-  read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_entier
-done
+seqkit_stats2
 
 read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
 while ! [[ $number_lenght =~ ^[0-9]+$ ]]
@@ -284,32 +267,10 @@ do
   read -p "Erreur de saisie, veuillez saisir un nombre entier >= 0 : " number_lenght
 done
 
-for element in $list_P
+for element in $List_P_rep
 do
-  if [ "$read_entier" == "n" ] || [ "$read_entier" == "no" ] || [ "$read_entier" == "non" ]; then #lancement un par un activer
-  {
-    read -p "Voulez-vous lancer le $element ? (y/n) " read_P
-    while ! [[ "$read_P" == "n" || "$read_P" == "no" || "$read_P" == "non" || "$read_P" == "y"  ||  "$read_P" == "yes" ||  "$read_P" == "oui" ]]
-    do
-      read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_P
-    done
-    if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
-    {
-      selecte $element
-      type_P="P$?"
-      pipeline $element $type_P $number $number_lenght
-    }
-    fi
-  } 
-  elif [ "$read_entier" == "y" ] || [ "$read_entier" == "yes" ] || [ "$read_entier" == "oui" ]; then  # lancement entier
-  {
-    selecte $element
-    type_P="P$?"
-    pipeline $element $type_P $number $number_lenght
-  }
-  fi
-
-  number=$(($number+1)) #nombres de tour de boucle  
+  pipeline $List_P_rep $number $number_lenght
+  number=$($number+1) #nombres de tour de boucle  
 done
 }
 
