@@ -25,34 +25,6 @@ function help()
   echo "-tb : Permet la comparaison de 2 VCF depuis VCF_Tools et le Blast des différences sur NCBI"
 }
 
-if [[ "$@" == -r ]]; then 
-{
-  pycoQC 
-}
-fi
-if [[ "$@" == -g ]]; then 
-{
-  seqkit_stats2
-}
-fi
-if [[ "$@" == -v ]]; then 
-{
-  echo
-  extract_VCF
-}
-fi
-if [[ "$@" == -t ]]; then 
-{
-  VCF_tools
-}
-fi
-if [[ "$@" == -tb ]]; then 
-{
-  VCF_tools
-  Blast
-}
-fi
-
 function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et sniffles
 {
   SECONDS=0
