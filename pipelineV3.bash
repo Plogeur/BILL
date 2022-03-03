@@ -89,7 +89,7 @@ function Search() { #generalisation
   for folder in $(find $1 -type d)
     do
     if [[ -f *.fastq ]]; then
-    List_P_rep+="$(cd $( dirname ${BASH_SOURCE[0]}) && pwd )"
+    List_P_rep+=($(cd $( dirname ${BASH_SOURCE[0]}) && pwd ))
     Pconc
     fi
   done
