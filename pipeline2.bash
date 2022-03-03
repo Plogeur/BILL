@@ -190,6 +190,18 @@ function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_name/seqkit/results_seqkit_all"
 }
 
+function Search () { #generalisation 
+  for folder in $(find $1 -type d)
+do
+  if [[ -f *.fastq ]]; then
+
+  fi
+done
+
+}
+# remplace selecte
+recursiveSearch
+
 function selecte() { 
   if [[ "$1" == "P1.2" ]]; then
     return 1
@@ -252,7 +264,7 @@ if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	
 }
 fi
 
-#PycoQC #à des commenter à la fin !
+PycoQC
 
 if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
 {
