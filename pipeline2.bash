@@ -1,5 +1,4 @@
 #!/bin/bash
-
 #################################################################################################
 #                                                                                               # 
 #Prend en entrée le nom du repertoire où sera excuter l'ensemble du pipeline                    #
@@ -10,13 +9,11 @@
 #Ce script ne permet pas la representation par IGV                                              #
 #                                                                                               #
 #################################################################################################
-
 #Variable global
 list_P="P1.2 P15.1 P15.5 P15.6 P15.8 P15.10 P33.1 P33.2 P33.6"
 #à modifier
 read -p "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)" input
 repertoire_name="/students/BILL/ines.boussiere/test/TP_2022"
-
 if [[ "$1" == -h ]]; then #boff
 {
   echo "-r : Permet de reprendre le pipeline"
@@ -38,20 +35,17 @@ if [[ "$@" == -v ]]; then
   #extract_VCF
 }
 fi
-
 if [[ "$@" == -t ]]; then 
 {
   VCF_tools
 }
 fi
-
 if [[ "$@" == -tb ]]; then 
 {
   VCF_tools
   Blast
 }
 fi
-
 function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et sniffles
 {
   SECONDS=0
@@ -101,11 +95,9 @@ function pipeline() #Pipeline avec les outils seqkit, minimap2, samtools et snif
   duration=$SECONDS
   echo "Temps de calcul pour $1 : $(($duration / 60)) minutes et $(($duration % 60)) secondes."
 }
-
 function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
   #$1 = name of folder
   echo "Création des fichiers..."
-
   #create all folder
   mkdir -p $1/{P1/P1.2/,P15/{P15.1/,P15.5/,P15.6/,P15.8/,P15.10/},P33/{P33.1/,P33.2/,P33.6/},Pconc/,seq_ref/,seqkit/}
   
@@ -125,15 +117,12 @@ function Create_folder_AND_Dl_file() { #create all folder and copy all fastq seq
   srun -c 10 cp /students/BILL/commun/bleu/fastq_pass/barcode10/*.fastq $1/P33/P33.2/
   srun -c 10 cp /students/BILL/commun/violet/fastq_pass/barcode12/*.fastq $1/P33/P33.6/
   echo "Fin de récupération des reads fastq"
-
   #seq ref
   cp /students/BILL/commun/REF/reference.fasta $1/seq_ref/
 }
-
 function PycoQC() { #Effectue le PycoQC sur un seul échantillon
   
   read -p "Sur quel barcode réaliser l'analyse PycoQC ? (bleu/rouge/vert/violet) " barcode
-
   while ! [[ "$barcode" == "bleu" || "$barcode" == "rouge" || "$barcode" == "vert" || "$barcode" == "violet" ]]
   do
     read -p "Erreur de saisie, veuillez saisir un barcode parmit (bleu/rouge/vert/violet) : " barcode
@@ -143,7 +132,6 @@ function PycoQC() { #Effectue le PycoQC sur un seul échantillon
   if [ "$barcode" == "bleu" ]; then #concatene les fastq s'il n'existe pas
   
     pycoQC -f /students/BILL/commun/bleu/sequencing_summary_FAQ77496_51f08628.txt -o $repertoire_name/seq_bleu_pycoQC.html
-
   elif [ "$barcode" == "rouge" ]; then #concatene les fastq s'il n'existe pas
   
     pycoQC -f /students/BILL/commun/rouge/sequencing_summary.txt -o $repertoire_name/seq_rouge_pycoQC.html
@@ -156,12 +144,9 @@ function PycoQC() { #Effectue le PycoQC sur un seul échantillon
   elif [ "$barcode" == "violet" ]; then #concatene les fastq s'il n'existe pas
   
     pycoQC -f /students/BILL/commun/violet/sequencing_summary_FAQ54172_5ccb60ff.txt -o $repertoire_name/seq_violet_pycoQC.html
-
   fi
-
   echo "Résultat du PycoQC disponible dans le repertoire : $repertoire_name"
 }
-
 function Pconc() { #Fait le PconcALL avec faisant le cat des fastq + le cat des cat
   for element in $list_P
   do
@@ -176,7 +161,6 @@ function Pconc() { #Fait le PconcALL avec faisant le cat des fastq + le cat des 
   done
   srun -c 10 cat $repertoire_name/Pconc/*.fastq > $repertoire_name/PconcAll.fastq
 }
-
 function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   echo "------------------ seqkit stats ------------------"
   if [ ! -e "$repertoire_name/PconcAll.fastq" ]; then #concatene les fastq s'il n'existe pas
@@ -189,22 +173,16 @@ function seqkit_stats2() { #Fait le seqkit stats avec PconcALL
   cat $repertoire_name/seqkit/results_seqkit_all.txt
   echo "Les résultats du seqkit de l'ensemble des variants sont aussi disponible dans le répertoire : $repertoire_name/seqkit/results_seqkit_all"
 }
-
 function Search () { #generalisation 
   for folder in $(find $1 -type d)
 do
-   
   if [[ -f *.fastq ]]; then
-  List_P_rep += $(cd $( dirname ${BASH_SOURCE[0]}) && pwd )
-  Pconc
 
   fi
 done
-
 }
 # remplace selecte
 recursiveSearch
-
 function selecte() { 
   if [[ "$1" == "P1.2" ]]; then
     return 1
@@ -216,7 +194,6 @@ function selecte() {
     return 0
   fi
 }
-
 function Blast() {
 echo "------------------ Blast : ------------------ "
 #recuperation des pos dans le fichier .out
@@ -224,7 +201,6 @@ echo "------------------ Blast : ------------------ "
 #blaster 
 #output terminal ou browser ? 
 }
-
 function extract_VCF() { #récupère les INS/DEL avec une profondeur 
   echo "------------------ extraction VSF : $1 ------------------ "
   #RE>20
@@ -233,7 +209,6 @@ function extract_VCF() { #récupère les INS/DEL avec une profondeur
   #nbIns=$(grep -c "SVTYPE=INS" "$entete".vcf)
   #echo "Il y a " $nbIns " insertion"
 }
-
 function traitement_VCF() {
   echo "------------------ Traitement VSF : $1 ------------------ "
   sed '/STRANDBIAS/d' $repertoire_name/$2/$1/mapping$4$1.sorted.mapped.vcf
@@ -241,7 +216,6 @@ function traitement_VCF() {
   #cut - f
   #
 }
-
 function VCF_tools() {
   read -p "Quelles séquences voulez-vous comparer avec VCF_tools ? " p_erP d_emeP
   #while ($p_erP==$d_emeP || ! ($p_erP=='P1.2')) #monkey proof
@@ -257,9 +231,29 @@ function VCF_tools() {
 
 function main() {
 number=1 #number of variant 
+read_entier='y' #par défaut on lance tout
+number_lenght='500' #par défaut taille 500 pour seqkit
+read_P='y' #par défaut on lance le P
+
+if [ ! -e "$repertoire_name/P33/P33.6/FAQ54172_pass_barcode12_5ccb60ff_6.fastq"	]; then #test
+{
+  Create_folder_AND_Dl_file $repertoire_name
+}
+fi
 
 PycoQC
-seqkit_stats2
+
+if [ ! -e "$repertoire_name/seqkit/results_seqkit_all.txt" ]; then #test
+{
+  seqkit_stats2
+}
+fi 
+
+read -p "Voulez-vous effectuer le pipeline sur toutes les sequences ? (y/n) " read_entier
+while ! [[ "$read_entier" == "n" || "$read_entier" == "no" || "$read_entier" == "non" || "$read_entier" == "y" || "$read_entier" == "yes" || "$read_entier" == "oui" ]]
+do
+  read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_entier
+done
 
 read -p "Quel taille de reads minimun pour le seqkit ? (<int> > 0) " number_lenght
 while ! [[ $number_lenght =~ ^[0-9]+$ ]]
@@ -267,13 +261,31 @@ do
   read -p "Erreur de saisie, veuillez saisir un nombre entier >= 0 : " number_lenght
 done
 
-for element in $List_P_rep
+for element in $list_P
 do
-  pipeline $List_P_rep $number $number_lenght
-  number=$($number+1) #nombres de tour de boucle  
+  if [ "$read_entier" == "n" ] || [ "$read_entier" == "no" ] || [ "$read_entier" == "non" ]; then #lancement un par un activer
+  {
+    read -p "Voulez-vous lancer le $element ? (y/n) " read_P
+    while ! [[ "$read_P" == "n" || "$read_P" == "no" || "$read_P" == "non" || "$read_P" == "y"  ||  "$read_P" == "yes" ||  "$read_P" == "oui" ]]
+    do
+      read -p "Erreur de saisie, veuillez saisir parmit (yes/y/oui/n/no/non) : " read_P
+    done
+    if [ "$read_P" == "y" ] || [ "$read_P" == "yes" ] || [ "$read_P" == "oui" ]; then #lancement un par un
+    {
+      selecte $element
+      type_P="P$?"
+      pipeline $element $type_P $number $number_lenght
+    }
+    fi
+  } 
+  elif [ "$read_entier" == "y" ] || [ "$read_entier" == "yes" ] || [ "$read_entier" == "oui" ]; then  # lancement entier
+  {
+    selecte $element
+    type_P="P$?"
+    pipeline $element $type_P $number $number_lenght
+  }
+  fi
+
+  number=$(($number+1)) #nombres de tour de boucle  
 done
 }
-
-main
-
-echo "Fin du programme"
