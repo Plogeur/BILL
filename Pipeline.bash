@@ -20,7 +20,7 @@ if [[ "$1" == -h ]]; then
 }
 fi
 
-echo "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)" input
+echo "Bienvenue sur le pipeline BILL ! Ce pipeline vous permet de réaliser des analyses sur les reads en formats FASTQ issus du séqençage Nanopore afin de déterminer leurs quantités et leurs qualités. Il va ensuite les mapper sur la séquence de référence puis analyser ce mapping. (Appuyer sur ENTRER pour continuer)"
 repertoire_name="$1"
 number_lenght="$2"
 
