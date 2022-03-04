@@ -43,3 +43,8 @@ Il effectue l'ensembles des analyse du PipelineV1 sur l'ensembles des variants p
 L'ensemble des fichiers résultats est situer sur le site du ngstc :
 - PipelineV1 : Dans le repertoire donnée en argument 
 - PipelineV2 : https://ngstc.iutms.umontpellier.fr/BILL/files/ines.boussiere/test/TP_2022/
+
+### PipelineV3
+
+La version 3 du pipeline prend en argument la taille minimun du seqkit et le repertoire racine surlequel ce trouve l'ensemble de repertoire et fichiers de séquençage. Il lance alors les analyse/traitement de façcon autonome sur tout les repertoire où sont présent des fichier fastq qu'il concidère comme étant un variant. Le programme ce termine une fois que l'ensemble des repertoires depuis le repertoire racine ont été traiter.
+
